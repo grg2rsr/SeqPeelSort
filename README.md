@@ -34,12 +34,12 @@ The input file is a `.nix` file containing a `Block` with one or more `Segments`
 An example conversion function for converting Spike2 `.smr` files to a `.nix` file can be found in `examples/smr2nix.py`. Additional converters can be written upon request, contact me and provide an example recording.
 
 ### Configuration file
-This files specifies the settings and parameters used for the spike sorting. Description of the individual parameters can be found in the example configuration file: `examples/example_config.ini`. XX link it
+This files specifies the settings and parameters used for the spike sorting. Description of the individual parameters can be found in the example configuration file: `examples/example_config.ini`.
 
 ### Example usage
 + [Download an example recording](https://web.gin.g-node.org/grg2rsr/SeqPeelSort_example_data/src/master/example.smr) in the `.smr` format into the subfolder `examples`.
-+ Convert the `.smr` file to a `.nix` file. To do so, run `python smr2nix.py example.smr`. Inside `smr2nix.py`, an example conversion function is given that can serve as a template for own data conversion functions.
-+ Run SeqPeelSort on the `.nix` file. `python SeqPeelSort.py ../examples/example_config.ini`
++ Convert the `.smr` file to a `.nix` file. To do so, run `python smr2nix.py example.smr`. The file `smr2nix.py`, contains an example conversion function, that can serve as a template for own data conversion functions.
++ Run SeqPeelSort on the `.nix` file: `python SeqPeelSort.py ../examples/example_config.ini`
 + The output is a `.nix` file named `example_sorted.nix` that contains the sorted spike trains. Alternatively, the output can be written in the `.csv` format, which generates a separate file for each unit/segment combination containing the time stamps of the predicted spikes.
 + The subfolder `plots` contains diagnostic plots of relevant computations of the algorithm (detailed below).
 
@@ -88,7 +88,7 @@ python benchmark_rates.py config.ini
 ```
 to get an estimate of the performance of the template matching step, including plots comparing the template matching result to a purely thresholding based result.
 
-## Future development
+## Planned future development
 + multithreaded template match for performance increase
 + expanding IO options based on users needs
 

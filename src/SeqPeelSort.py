@@ -1,8 +1,3 @@
-# %reset -f
-# %load_ext autoreload
-# %autoreload 2
-# %matplotlib qt5
-
 import sys, os, copy, dill, warnings
 
 import scipy as sp
@@ -15,8 +10,9 @@ from config import get_config
 
 from tqdm import tqdm
 
-tp.banner("This is SeqPeelSort", 78)
+tp.banner("This is SeqPeelSort v1.0.0", 78)
 tp.banner("author: Georg Raiser - grg2rsr@gmail.com", 78)
+
 
 # ██ ███    ██ ██
 # ██ ████   ██ ██
@@ -26,7 +22,6 @@ tp.banner("author: Georg Raiser - grg2rsr@gmail.com", 78)
 
 # get config
 config_path = os.path.abspath(sys.argv[1])
-# config_path = "/home/georg/Dropbox/python/SeqPeelSort/examples/example_config.ini"
 
 Config = get_config(config_path)
 print_msg('config file read from ' + config_path)
@@ -45,8 +40,6 @@ with NixIO(filename=data_path) as Reader:
 Blk.name = Config['general']['experiment_name']
 print_msg('data read from ' + data_path)
 
-# DEBUG
-Blk.segments = Blk.segments[:3]
 
 # ██████  ██████  ███████ ██████  ██████   ██████   ██████ ███████ ███████ ███████
 # ██   ██ ██   ██ ██      ██   ██ ██   ██ ██    ██ ██      ██      ██      ██
@@ -69,6 +62,7 @@ for seg in Blk.segments:
 if Config['general']['peak_mode'] == 'negative':
     for seg in Blk.segments:
         seg.analogsignals[0] *= -1
+
 
 # ███████ ██████  ██ ██   ██ ███████     ██████  ███████ ████████ ███████  ██████ ████████
 # ██      ██   ██ ██ ██  ██  ██          ██   ██ ██         ██    ██      ██         ██
@@ -227,6 +221,7 @@ for i, unit in enumerate(Config['general']['units']):
 with open(os.path.join('results', 'templates.dill'), 'wb') as fH:
     dill.dump(Templates_cleaned, fH)
 
+
 # ████████ ███████ ███    ███ ██████  ██       █████  ████████ ███████     ███    ███  █████  ████████  ██████ ██   ██
 #    ██    ██      ████  ████ ██   ██ ██      ██   ██    ██    ██          ████  ████ ██   ██    ██    ██      ██   ██
 #    ██    █████   ██ ████ ██ ██████  ██      ███████    ██    █████       ██ ████ ██ ███████    ██    ██      ███████
@@ -234,7 +229,6 @@ with open(os.path.join('results', 'templates.dill'), 'wb') as fH:
 #    ██    ███████ ██      ██ ██      ███████ ██   ██    ██    ███████     ██      ██ ██   ██    ██     ██████ ██   ██
 
 print_msg('template matching ... ')
-
 
 def tm_run(AnalogSignal, templates_sim, config):
     AnalogSignal = copy.deepcopy(AnalogSignal)
@@ -244,7 +238,6 @@ def tm_run(AnalogSignal, templates_sim, config):
     V_peeled, V_recons = peel(AnalogSignal, SpikeTrain_TM, Scores_TM, templates_sim)
 
     return V_peeled, V_recons, SpikeTrain_TM, Score_TM
-
 
 for seg in tqdm(Blk.segments, desc='template matching segment'):
 

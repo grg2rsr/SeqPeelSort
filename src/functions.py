@@ -6,7 +6,10 @@
 # ██ ██      ██ ██       ██████  ██   ██    ██    ███████
 
 # system
-import sys, os, time, copy
+import sys
+import os
+import time
+import copy
 import resource
 import warnings
 from tqdm import tqdm
@@ -41,28 +44,31 @@ t0 = time.time()
 # ██   ██ ██      ██      ██      ██      ██   ██      ██
 # ██   ██ ███████ ███████ ██      ███████ ██   ██ ███████
 
-def print_msg(msg,log=True):
-    """
-    pretty print, with elapsed time and current memory usage
+def print_msg(msg, log=True):
+    """prints the msg string with elapsed time and current memory usage.
 
     Args:
         msg (str): the string to print
+        log (bool): write the msg to the log as well
+
     """
     # TODO check for compatibility with windows / mac systems
     mem_used = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6
     mem_used = sp.around(mem_used, 2)
     memstr = '('+str(mem_used) + ' GB): '
-    print(colorama.Fore.CYAN + tp.humantime(time.time()-t0) + ' elapsed\t' + memstr + '\t' + colorama.Fore.GREEN + msg)
+    print(colorama.Fore.CYAN + tp.humantime(time.time()-t0) +
+          ' elapsed\t' + memstr + '\t' + colorama.Fore.GREEN + msg)
     if log:
-        with open('log.log','a+') as fH:
+        with open('log.log', 'a+') as fH:
             log_str = tp.humantime(time.time()-t0) + ' elapsed\t' + memstr + '\t' + msg + os.newline
             fH.writelines(log_str)
     pass
 
+
 def select_by_dict(objs, **selection):
-    """newline
+    """
     selects elements in a list of neo objects with annotations matching the
-    selection dict
+    selection dict.
 
     Args:
         objs (list): a list of neo objects that have annotations
@@ -104,6 +110,7 @@ def MAD(AnalogSignal):
 
 
 def exp_decay(x, A, tau, b):
+    """ exponential decay function """
     y = A * sp.exp(-x/tau) + b
     return y
 
@@ -113,8 +120,9 @@ def time2ind(tvec, time):
     get the index of time in time vector
 
     Args:
-        tvec (Quantitiy): a time vector with n time points of shape (n,)
-        time (Quantity): a time point
+        tvec (quantities.Quantity): a time vector with n time points of shape
+            (n,)
+        time (quantities.Quantity): a time point
 
     Returns:
         int: the index
@@ -130,24 +138,24 @@ def times2inds(tvec, ttup):
 
 def refractory_correct_SpikeTrain(SpikeTrain, ref_per=2*pq.ms):
     """
-    remove spike duplets from a spike train that are closer together than
-    ref_per, keep the earlier
+    checks for spike duplets in the SpikeTrain, removes the latter if both
+    spikes are closer in time than a refractory period.
 
     Args:
         SpikeTrain (neo.core.SpikeTrain): the SpikeTrain
-        ref_per (Quantity): the refractory period - minimum time between two
-            spikes
+        ref_per (quantities.Quantity): the refractory period - minimum time
+            between two spikes
 
     Returns:
         neo.core.SpikeTrain: the corrected SpikeTrain
     """
 
-    Tx,Ty = sp.meshgrid(SpikeTrain.times,SpikeTrain.times)
+    Tx, Ty = sp.meshgrid(SpikeTrain.times, SpikeTrain.times)
     T = (Tx < Ty+ref_per)
     try:
-        good_inds = sp.unique(sp.argmin(T,axis=1))
+        good_inds = sp.unique(sp.argmin(T, axis=1))
         return SpikeTrain[good_inds]
-    except ValueError: # if empty
+    except ValueError:  # if empty
         return SpikeTrain
 
 # ████████ ██   ██ ██████  ███████ ███████ ██   ██  ██████  ██      ██████  ██ ███    ██  ██████
@@ -156,6 +164,7 @@ def refractory_correct_SpikeTrain(SpikeTrain, ref_per=2*pq.ms):
 #    ██    ██   ██ ██   ██ ██           ██ ██   ██ ██    ██ ██      ██   ██ ██ ██  ██ ██ ██    ██
 #    ██    ██   ██ ██   ██ ███████ ███████ ██   ██  ██████  ███████ ██████  ██ ██   ████  ██████
 
+
 def bounded_threshold(SpikeTrain, bounds):
     """
     removes all spike from a SpikeTrain which amplitudes do not fall within the
@@ -163,8 +172,8 @@ def bounded_threshold(SpikeTrain, bounds):
 
     Args:
         SpikeTrain (neo.core.SpikeTrain): The SpikeTrain
-        bounds (Quantity): a Quantity of shape (2,) with (lower,upper) bounds,
-            unit [uV]
+        bounds (quantities.Quantity): a Quantity of shape (2,) with
+            (lower,upper) bounds, unit [uV]
 
     Returns:
         neo.core.SpikeTrain: the resulting SpikeTrain
@@ -215,10 +224,10 @@ def spike_detect(AnalogSignal, bounds, lowpass_freq=1000*pq.Hz):
 
     Args:
         AnalogSignal (neo.core.AnalogSignal): the waveform
-        bounds (Quantity): a Quantity of shape (2,) with (lower,upper) bounds,
-            unit [uV]
-        lowpass_freq (Quantity): cutoff frequency for a smoothing step before
-            spike detection, unit [Hz]
+        bounds (quantities.Quantity): a Quantity of shape (2,) with
+            (lower,upper) bounds, unit [uV]
+        lowpass_freq (quantities.Quantity): cutoff frequency for a smoothing
+            step before spike detection, unit [Hz]
 
     Returns:
         neo.core.SpikeTrain: the resulting SpikeTrain
@@ -259,7 +268,8 @@ def get_templates(AnalogSignal, SpikeTrain, wsize=4*pq.ms, N=None):
         AnalogSignal (neo.core.AnalogSignal): the signal containing the spike
             waveforms, the recording
         SpikeTrain (neo.core.SpikeTrain): the SpikeTrain
-        wsize (Quantity): temporal size of the window of the extracted waveforms
+        wsize (quantities.Quantity): temporal size of the window of the
+            extracted waveforms
         N (int): if specified, only return N template waveforms.
 
     Returns:
@@ -338,7 +348,7 @@ def clean_Templates(Templates):
         Templates (neo.core.AnalogSignal): the extracted template waveforms
 
     Returns:
-        (neo.core.AnalogSignal): the cleaned template waveforms
+        neo.core.AnalogSignal: the cleaned template waveforms
     """
 
     templates = Templates.magnitude
@@ -360,13 +370,13 @@ def clean_Templates(Templates):
 def calc_frate_at_spikes(SpikeTrain):
     """
     estimates local firing rate at time points of spikes by convolution with a
-    gaussian kernel
+    gaussian kernel.
 
     Args:
         SpikeTrain (neo.core.SpikeTrain): the input SpikeTrain
 
     Returns:
-        (Quantity): the firing rates at the time point of spikes
+        quantities.Quantity: the firing rates at the time point of spikes
     """
 
     # estimate firing rate
@@ -387,13 +397,13 @@ def calc_spike_amp_reduction(frate_at_spikes, spike_amps, N=1000):
     exponetial decay function.
 
     Args:
-        frate_at_spikes (Quantity): the firing rates at the time point of
-            spikes. Output of the function calc_frate_at_spikes.
-        spike_amps (Quantity): the amplitude of the spikes waveforms.
+        frate_at_spikes (quantities.Quantity): the firing rates at the time
+            point of spikes. Output of the function calc_frate_at_spikes.
+        spike_amps (quantities.Quantity): the amplitude of the spikes waveforms.
         N (int): If defined, subsample all spikes to this number for the fit.
 
     Return:
-        (list): the parameters of best fit
+        list: the parameters of best fit
     """
 
     params = (spike_amps.max().magnitude, frate_at_spikes.mean().magnitude, spike_amps.min().magnitude)
@@ -421,7 +431,8 @@ def calc_adaptive_threshold(frate, pfit, bounds):
     Args:
         frate (neo.core.AnalogSignal): the firing rate
         pfit (list): the parameters of the fit
-        bounds (Quantity): the initial static bounds that are to be modified.
+        bounds (quantities.Quantity): the initial static bounds that are to be
+            modified.
 
     Returns:
         neo.core.AnalogSignal, neo.core.AnalogSignal: lower and upper bound,
@@ -477,7 +488,7 @@ def template_match(AnalogSignal, Templates_sim):
     for i in range(N):
         res = cv2.matchTemplate(data_, Templates_sim[:, i], method=1).flatten()
         Scores[:, i] = sp.pad(res, (0, Npad), mode='constant', constant_values=1)
-    Scores = 1-Scores # remap from 0 to 1
+    Scores = 1-Scores  # remap from 0 to 1
 
     # to neo object
     Scores = neo.core.AnalogSignal(Scores, units=pq.dimensionless,
@@ -491,13 +502,16 @@ def spike_detect_on_TM(Scores, wsize, percentile=90, thresh=0.5):
 
     Args:
         Scores (neo.core.AnalogSignal): the result of the template matching step
-        wsize (Quantity): the size of the templates
-        percentile (float): 0-100
-        thresh (float): 0-1
+        wsize (quantities.Quantity): the size of the templates
+        percentile (float): the percentile level that is calculated from the
+            Scores distribution. Must be between 0-100.
+        thresh (float): the threshold that is applied to percentile level for
+            detecting new spikes. Must be between 0-1.
 
     Returns:
         SpikeTrain (neo.core.SpikeTrain): The estimated SpikeTrain
-        Score_lim (neo.core.AnalogSignal): the ...
+        Score_lim (neo.core.AnalogSignal): The values of the Scores distribution
+            at each timepoint at the percentile level.
     """
 
     # AnalogSignal of Score percentile
@@ -572,7 +586,7 @@ def peel(AnalogSignal, SpikeTrain, Scores, templates_sim):
         # wow this sucks in uglyness - the additional sampling period added is needed cause otherwise window is 1 too short ...
         try:
             inds = times2inds(V_recons.times, V_recons.time_slice(t, t+wsize).times[[0, -1]])
-            inds[1] +=1
+            inds[1] += 1
         except ValueError:
             import pdb
             pdb.set_trace()
@@ -591,28 +605,29 @@ def peel(AnalogSignal, SpikeTrain, Scores, templates_sim):
 # ██   ██ ██      ██  ██ ██ ██      ██   ██ ██  ██  ██ ██   ██ ██   ██ ██  ██
 # ██████  ███████ ██   ████  ██████ ██   ██ ██      ██ ██   ██ ██   ██ ██   ██
 
-def generate_V_sim(Templates,rates,Config,t_stop_sim,ref_corr=False):
+def generate_V_sim(Templates, rates, Config, t_stop_sim, ref_corr=False):
     """
     Args:
         Templates (dict): A dict containing a neo.core.AnalogSignal per unit
-        rates (dict): vector of rates (Quantity) for each unit.
-        Config (dict):
-        t_stop_sim (Quantity): max time of each simulated spike train
+        rates (dict): vector of rates (quantities.Quantity) for each unit.
+        Config (dict): the configuration dictionary
+        t_stop_sim (quantities.Quantity): max time of each simulated spike train
 
     Returns:
         V_sim (neo.core.AnalogSignal):
         SpikeTrains_true (dict):
 
-    Templates: dict
-    rates: a dict with rates for each unit """
+    """
 
     unit_names = Config['general']['units']
     fs = Templates[unit_names[0]].sampling_rate
 
     # ini emtpy voltage with noise level inferred from templates
     # this likely slightly overestimates
-    noise_sd = (Templates[unit_names[0]] - Templates[unit_names[0]].mean(axis=1)[:,sp.newaxis]).std(axis=1).std()
-    V_sim = neo.core.AnalogSignal(sp.randn(int((fs*t_stop_sim).simplified.magnitude)) *  noise_sd,t_stop=t_stop_sim,sampling_rate=fs,units=Templates[unit_names[0]].units)
+    noise_sd = (Templates[unit_names[0]] - Templates[unit_names[0]
+                                                     ].mean(axis=1)[:, sp.newaxis]).std(axis=1).std()
+    V_sim = neo.core.AnalogSignal(sp.randn(int((fs*t_stop_sim).simplified.magnitude)) *
+                                  noise_sd, t_stop=t_stop_sim, sampling_rate=fs, units=Templates[unit_names[0]].units)
 
     # V_sim filling with spikes
     SpikeTrains_true = {}
@@ -621,7 +636,8 @@ def generate_V_sim(Templates,rates,Config,t_stop_sim,ref_corr=False):
 
         # generate SpikeTrain
         rate = rates[unit]
-        SpikeTrain = ele.spike_train_generation.homogeneous_poisson_process(t_stop=t_stop_sim, rate=rate)
+        SpikeTrain = ele.spike_train_generation.homogeneous_poisson_process(
+            t_stop=t_stop_sim, rate=rate)
         SpikeTrain.sampling_rate = fs
 
         # remove unrealistic spikes
@@ -630,7 +646,8 @@ def generate_V_sim(Templates,rates,Config,t_stop_sim,ref_corr=False):
 
         # remove too too early too late spikes
         wsize = config['wsize']
-        good_inds = sp.logical_and(SpikeTrain.times > wsize/2, SpikeTrain.times  < t_stop_sim-wsize/2)
+        good_inds = sp.logical_and(SpikeTrain.times > wsize/2,
+                                   SpikeTrain.times < t_stop_sim-wsize/2)
         SpikeTrain = SpikeTrain[good_inds]
 
         # store
@@ -640,29 +657,38 @@ def generate_V_sim(Templates,rates,Config,t_stop_sim,ref_corr=False):
         SpikeTrain_ = SpikeTrain.copy() - wsize/2
         n_templates = Templates[unit].shape[1]
 
-        tvec = V_sim.times # for speedup
+        tvec = V_sim.times  # for speedup
         # for i,t in enumerate(tqdm(SpikeTrain_)):
-        for i,t in enumerate(SpikeTrain_):
-            template = Templates[unit][:,random.randint(n_templates)]
+        for i, t in enumerate(SpikeTrain_):
+            template = Templates[unit][:, random.randint(n_templates)]
             # NOTE .time_slice() method can not be used here, because it returns a view
-            inds = times2inds(tvec, V_sim.time_slice(t,t+wsize).times[[0,-1]])
+            inds = times2inds(tvec, V_sim.time_slice(t, t+wsize).times[[0, -1]])
             inds[1] += 1
             V_sim[slice(*inds)] += template
 
     return V_sim, SpikeTrains_true
 
+
 def simulate_dataset(Templates, Rates, Config, sim_dur=1*pq.s, save=None):
     """
-    creates a block with
+    creates a block with an number of segments defined by the length of the
+    list Rates.
+
     Args:
-        rates: a list of dicts
+        rates (list): a list of dicts, each defining the unit names and firing
+            rates present for this segment
+        Config (dict): the configuration dictionary
+        sim_dur (quantities.Quantity): The length of the simulated segment
+        save (str): saves simulated dataset to disk if set to a path
+
     """
+
     # create simulated dataset
     Blk = neo.core.Block()
 
     # unit_names = Config['general']['units']
 
-    for i,rates in enumerate(tqdm(Rates)):
+    for i, rates in enumerate(tqdm(Rates)):
 
         # simulate a recording
         V_sim, SpikeTrains_true = generate_V_sim(Templates, rates, Config, sim_dur)
@@ -671,7 +697,7 @@ def simulate_dataset(Templates, Rates, Config, sim_dur=1*pq.s, save=None):
         seg = neo.core.Segment()
         seg.analogsignals.append(V_sim)
         for unit, st in SpikeTrains_true.items():
-            st.annotate(unit=unit,kind='truth',rate=rates[unit])
+            st.annotate(unit=unit, kind='truth', rate=rates[unit])
             seg.spiketrains.append(st)
 
         Blk.segments.append(seg)
@@ -687,31 +713,40 @@ def simulate_dataset(Templates, Rates, Config, sim_dur=1*pq.s, save=None):
 
     return Blk
 
-def quantify_error_rates(st_true,st_pred,ttol=0.5*pq.ms):
-    # FIXME REWRITE this docstring!!
-    """ definition:
-    spike is in
 
-    true and in pred = correctly predicted = true positive
-    true but not in pred = missed spike = false negative
-    not in true, but in pred = erronously predicted = false positive
+def quantify_error_rates(st_true, st_pred, ttol=0.5*pq.ms):
+    """
+    quantifies the sorting error between a known true SpikeTrain and a predicted
+    one.
 
-    true negative doesn't really make sense, hence doesn't exist
+    Error definition:
+        If a spike is in
+        true and in pred = correctly predicted = true positive
+        true but not in pred = missed spike = false negative
+        not in true, but in pred = erronously predicted = false positive
 
-    all within ttol
+        true negative doesn't really make sense, hence doesn't exist
 
-    only one spike, if multiple is counted as wrong as well
+    Args:
+        st_true (neo.core.SpikeTrain): The ground truth spike train
+        st_pred (neo.core.SpikeTrain): The predicted spike train
+        ttol (quantities.Quantity): all temporal comparisons made within this
+            time interval
+
+    Returns:
+        fmiss (float): the fraction of missed spikes
+        ferr (float): the fraction of erronously predicted spikes
     """
 
     # false negative counting
     miss = 0.0
-    total = float(len(st_true)) # shape
+    total = float(len(st_true))  # shape
     for t in st_true:
         if sp.sum(sp.absolute(st_pred.times - t) < ttol) != 1:
             miss += 1
 
     try:
-        fmiss = miss / total # fraction of missed spikes
+        fmiss = miss / total  # fraction of missed spikes
     except ZeroDivisionError:
         fmiss = sp.nan
 
@@ -721,7 +756,7 @@ def quantify_error_rates(st_true,st_pred,ttol=0.5*pq.ms):
         if sp.sum(sp.absolute(st_true.times - t) < ttol) != 1:
             err += 1
     try:
-        ferr = err / total # frac of spikes that are erronously predicted of total predicted spikes
+        ferr = err / total  # frac of spikes that are erronously predicted of total predicted spikes
     except ZeroDivisionError:
         ferr = sp.nan
 

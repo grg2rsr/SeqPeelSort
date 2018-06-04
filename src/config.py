@@ -3,7 +3,15 @@ import quantities as pq
 from functions import print_msg
 
 def get_config(path):
-    """ FIXME """ # FIXME docstring
+    """ parses a config file.
+
+    Args:
+        path (str): read the config file from this path
+
+    Returns:
+        dict: the configuration parameters in a dict
+
+    """
 
     # ini read config
     parser = configparser.ConfigParser()
