@@ -19,7 +19,7 @@ default_volt = pq.uV
 
 def zoom_obj(Obj, zoom, t_center=None):
     """
-    helper to zoom various neo.core objects in the temporal domain around
+    Helper to zoom various neo.core objects in the temporal domain around
     t_center. If not specified, t_center it the middle
 
     Args:
@@ -56,7 +56,8 @@ def get_units_formatted(Quantity):
 
 
 def plot_AnalogSignal(AnalogSignal, ax=None, rescale=True, **kwargs):
-    """plots an neo.core.AnalogSignal
+    """
+    plots an neo.core.AnalogSignal
 
     Args:
         AnalogSignal (neo.core.AnalogSignal): The AnalogSignal to plot
@@ -86,7 +87,8 @@ def plot_AnalogSignal(AnalogSignal, ax=None, rescale=True, **kwargs):
 
 
 def plot_SpikeTrain(SpikeTrain, ax=None, **kwargs):
-    """plots a neo.core.SpikeTrain
+    """
+    plots a neo.core.SpikeTrain
 
     Args:
         SpikeTrain (neo.core.SpikeTrain): The SpikeTrain to plot
