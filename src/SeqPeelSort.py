@@ -1,4 +1,8 @@
-import sys, os, copy, dill, warnings
+import sys
+import os
+import copy
+import dill
+import warnings
 
 import scipy as sp
 import neo
@@ -239,6 +243,7 @@ def tm_run(AnalogSignal, templates_sim, config):
 
     return V_peeled, V_recons, SpikeTrain_TM, Score_TM
 
+
 for seg in tqdm(Blk.segments, desc='template matching segment'):
 
     for i, unit in enumerate(Config['general']['units']):
@@ -297,16 +302,18 @@ for chx in Blk.channel_indexes:
 output_format = Config['general']['output_format']
 
 
-if  output_format == 'nix':
-    outpath = os.path.join('results', os.path.splitext(os.path.basename(data_path))[0]+"_sorted.nix")
+if output_format == 'nix':
+    outpath = os.path.join('results', os.path.splitext(
+        os.path.basename(data_path))[0]+"_sorted.nix")
     with NixIO(filename=outpath) as Writer:
         Writer.write_block(Blk)
         print_msg("output written to "+outpath)
 
 if output_format == 'csv':
     import pandas as pd
-    for i,seg in enumerate(Blk.segments):
-        for j,st in enumerate(seg.spiketrains):
-            outpath = os.path.join('results', os.path.splitext(os.path.basename(data_path))[0]+"_unit_"+st.annotations['unit']+"_trial_"+str(i)+"_sorted.csv")
+    for i, seg in enumerate(Blk.segments):
+        for j, st in enumerate(seg.spiketrains):
+            outpath = os.path.join('results', os.path.splitext(os.path.basename(data_path))[
+                                   0]+"_unit_"+st.annotations['unit']+"_trial_"+str(i)+"_sorted.csv")
             pd.Series(st.times).to_csv(path=outpath)
             print_msg("output written to "+outpath)

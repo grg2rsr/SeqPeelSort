@@ -1,10 +1,3 @@
-
-# ██ ███    ███ ██████   ██████  ██████  ████████ ███████
-# ██ ████  ████ ██   ██ ██    ██ ██   ██    ██    ██
-# ██ ██ ████ ██ ██████  ██    ██ ██████     ██    ███████
-# ██ ██  ██  ██ ██      ██    ██ ██   ██    ██         ██
-# ██ ██      ██ ██       ██████  ██   ██    ██    ███████
-
 # system
 import sys
 import os
@@ -423,8 +416,9 @@ def calc_adaptive_threshold(frate, pfit, bounds):
             modified.
 
     Returns:
-        neo.core.AnalogSignal, neo.core.AnalogSignal: lower and upper bound,
-            modified accoring to spike amp decrease
+        adap_bound_lower (neo.core.AnalogSignal): lower bound, modified
+            according to spike amp decrease
+        adap_bound_upper (neo.core.AnalogSignal): upper bound, modified as above
     """
 
     pfit_lower = (pfit[0], pfit[1], bounds[0].magnitude)
@@ -601,9 +595,9 @@ def generate_V_sim(Templates, rates, Config, t_stop_sim, ref_corr=False):
         t_stop_sim (quantities.Quantity): max time of each simulated spike train
 
     Returns:
-        V_sim (neo.core.AnalogSignal):
-        SpikeTrains_true (dict):
-
+        V_sim (neo.core.AnalogSignal): The simulated AnalogSignal
+        SpikeTrains_true (dict): a dictionary containing the ground truth spike
+            trains
     """
 
     unit_names = Config['general']['units']
@@ -666,6 +660,8 @@ def simulate_dataset(Templates, Rates, Config, sim_dur=1*pq.s, save=None):
         sim_dur (quantities.Quantity): The length of the simulated segment
         save (str): saves simulated dataset to disk if set to a path
 
+    Returns:
+        neo.core.Block: the simulated data set
     """
 
     # create simulated dataset
@@ -701,8 +697,7 @@ def quantify_error_rates(st_true, st_pred, ttol=0.5*pq.ms):
     Quantifies the sorting error between a known true SpikeTrain and a predicted
     one.
 
-    Error definition:
-        If a spike is in
+    Error definition - if a spike is in:
         true and in pred = correctly predicted = true positive
         true but not in pred = missed spike = false negative
         not in true, but in pred = erronously predicted = false positive

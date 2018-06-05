@@ -31,8 +31,8 @@ def zoom_obj(Obj, zoom, t_center=None):
 
     Returns:
         The zoomed neo object
-
     """
+
     Obj = copy.deepcopy(Obj)
     if type(Obj) == neo.core.spiketrain.SpikeTrain:
         if t_center is None:
@@ -61,15 +61,15 @@ def plot_AnalogSignal(AnalogSignal, ax=None, rescale=True, **kwargs):
 
     Args:
         AnalogSignal (neo.core.AnalogSignal): The AnalogSignal to plot
-        ax (matplotlib.axes._subplots.AxesSubplot): If set, plot into this axes.
+        ax (matplotlib.axes): If set, plot into this axes.
             Otherwise, create a new one
         rescale (bool): rescale to default units
         **kwargs: to be passed to matplotlibs axes.plot()
 
     Returns:
-        matplotlib.axes._subplots.AxesSubplot: the matplotlib axes
-
+        matplotlib.pyplot.axes
     """
+
     if ax is None:
         ax = plt.gca()
 
@@ -92,14 +92,14 @@ def plot_SpikeTrain(SpikeTrain, ax=None, **kwargs):
 
     Args:
         SpikeTrain (neo.core.SpikeTrain): The SpikeTrain to plot
-        ax (matplotlib.axes._subplots.AxesSubplot): If set, plot into this axes.
+        ax (matplotlib.axes): If set, plot into this axes.
             Otherwise, create a new one
         **kwargs: to be passed to matplotlibs axes.plot()
 
     Returns:
-        matplotlib.axes._subplots.AxesSubplot: the matplotlib axes
-
+        matplotlib.pyplot.axes
     """
+
     if ax is None:
         ax = plt.gca()
 
@@ -125,7 +125,7 @@ def plot_spike_histogram(Blk, Config, save=None):
         save (str): save figure at this path if set
 
     Return:
-        tuple: figure, axes
+        matplotlib.pyplot.Figure, matplotlib.pyplot.axes
     """
 
     # gather all spike amplitudes
@@ -171,7 +171,7 @@ def plot_amp_reduction(pfit, frate_at_spikes, spike_amps, Config, unit, save=Non
         unit (str): the name of the unit.
 
     Return:
-        tuple: matplotlib.figure.Figure, axes
+        matplotlib.pyplot.Figure, matplotlib.pyplot.axes
     """
 
     # FIXME fix the awkward passing of both unit and Config. Requires a bit of
@@ -211,7 +211,7 @@ def plot_spike_detect(Segment, Config, save=None, zoom=None):
         zoom (bool): plot zoomed version or full Segment
 
     Returns:
-        tuple: matplotlib.figure.Figure, axes
+        matplotlib.pyplot.Figure, matplotlib.pyplot.axes
     """
 
     fig, ax = plt.subplots()
@@ -285,7 +285,7 @@ def plot_Templates(templates, templates_sim, good_inds, Config, save=None):
         save (str): save figure at this path if set
 
     Returns:
-        tuple: matplotlib.figure.Figure, axes
+        matplotlib.pyplot.Figure, matplotlib.pyplot.axes
     """
 
     fig, axes = plt.subplots(ncols=2, sharex=True, sharey=True)
@@ -312,8 +312,9 @@ def plot_TM_result(Segment, Config, zoom=None, save=None):
         save (str): save figure at this path if set
 
     Returns:
-        tuple: matplotlib.figure.Figure, axes
+        list: a list of matplotlib.pyplot.Figure, one for each unit.
     """
+    
     figures = {}
     for i, unit in enumerate(Config['general']['units']):
         config = Config[unit]
