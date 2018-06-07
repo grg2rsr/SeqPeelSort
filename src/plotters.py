@@ -20,7 +20,7 @@ default_volt = pq.uV
 def zoom_obj(Obj, zoom, t_center=None):
     """
     Helper to zoom various neo.core objects in the temporal domain around
-    t_center. If not specified, t_center it the middle
+    t_center. If not specified, t_center it the middle of the time axis.
 
     Args:
         Obj: A neo.core.SpikeTrain or neo.core.AnalogSignal.
@@ -202,7 +202,7 @@ def plot_amp_reduction(pfit, frate_at_spikes, spike_amps, Config, unit, save=Non
 
 def plot_spike_detect(Segment, Config, save=None, zoom=None):
     """
-    plot the result of initial spike detection
+    plot the result of initial spike detection.
 
     Args:
         Segment (neo.core.Segment): the Segment to plot
@@ -303,7 +303,7 @@ def plot_Templates(templates, templates_sim, good_inds, Config, save=None):
 
 def plot_TM_result(Segment, Config, zoom=None, save=None):
     """
-    plot the result of template matching
+    plot the result of template matching.
 
     Args:
         Segment (neo.core.Segment): the Segment to plot
@@ -314,7 +314,7 @@ def plot_TM_result(Segment, Config, zoom=None, save=None):
     Returns:
         list: a list of matplotlib.pyplot.Figure, one for each unit.
     """
-    
+
     figures = {}
     for i, unit in enumerate(Config['general']['units']):
         config = Config[unit]

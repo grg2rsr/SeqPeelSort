@@ -66,13 +66,13 @@ Then, an iterative detecting and removing spikes ("_peeling_") loop starts with 
 the above steps above are then applied to the next smaller unit, using the "peeled" voltage for the next template matching step.
 
 ## Benchmarking
-To my knowledge, no ground truth data set for SSR recordings is available. If this is wrong and you know of or have a dataset of intracellular recordings of multiple neurons within one sensillum, please contact me.
+To my knowledge, no ground truth data set for SSR recordings is available. If this is wrong and you know of or have a dataset of intracellular recordings of multiple neurons within one sensillum, please contact me, such data would be of great help.
 
-In order to nevertheless estimate the sorting performance of the algorithm, a simulated dataset can be generated from extracted templates, and the sorting performance of the algorithm is assesed with this artificial ground truth dataset. This is done by generating an artificial spike train (homogeneous poisson process with a removal of spikes that would fall into the refractory period of a previous spike) and placing spike waveforms at the random time points.
+In order to nevertheless estimate the sorting performance of the algorithm, a simulated dataset can be generated from extracted templates, and the sorting performance of the algorithm is assessed with this artificial ground truth dataset. This is done by generating an artificial spike train (homogeneous poisson process with a removal of spikes that would fall into the refractory period of a previous spike) and placing spike waveforms at the random time points.
 
 Two benchmarks are available: 1) `benchmark_tm_params.py` can be used to determine optimal template matching parameters for the recording. Here, either threshold or percentile parameters of the algorithm are swept over the valid range in a brute force manner while the other is held fixed. 2) `benchmark_rates.py` can be used to estimate absolute template matching performance. For each unit combination, the firing rates are swept and the generated data is subjected to the template matching and peeling steps of the algorithm.
 
-The results are placed in a subfolder `benchmark`.
+The results are placed in a subfolder `benchmark`. Examples can be found here XX run it and link gin
 
 
 ### Benchmarking example

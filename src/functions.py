@@ -53,7 +53,7 @@ def print_msg(msg, log=True):
           ' elapsed\t' + memstr + '\t' + colorama.Fore.GREEN + msg)
     if log:
         with open('log.log', 'a+') as fH:
-            log_str = tp.humantime(time.time()-t0) + ' elapsed\t' + memstr + '\t' + msg + os.newline
+            log_str = tp.humantime(time.time()-t0) + ' elapsed\t' + memstr + '\t' + msg + os.linesep
             fH.writelines(log_str)
     pass
 
