@@ -40,30 +40,23 @@ def smr2nix(path, cut_times):
     Segments = []
     for t in Blk.segments[0].events[0].times:
         segment = neo.core.Segment()
-        # Asig = copy.deepcopy(AnalogSignal.time_slice(*(t+cut_times)))
         Asig = AnalogSignal.time_slice(*(t+cut_times))
+        # see https://github.com/NeuralEnsemble/python-neo/issues/536
+        Asig.annotations = dict()
+
         segment.analogsignals.append(Asig)
         Segments.append(segment)
-
-    # for t in Blk.segments[0].events[0].times:
-    #     segment = neo.core.Segment()
-    #     Asig = AnalogSignal.time_slice(*(t+cut_times))
-    #     # copy annotations from original signal
-    #     Asig.annotations = AnalogSignal.annotations.copy()
-    #     del Asig.annotations["nix_name"]
-    #     # append to Segment
-    #     segment.analogsignals.append(Asig)
-    #     Segments.append(segment)
-
 
     # put back to Block
     Blk.segments = Segments
 
     # DEBUG
-    for seg in Blk.segments:
-        print(seg.analogsignals[0].t_start, id(seg.analogsignals[0]))
+    # for seg in Blk.segments:
+        # print(seg.analogsignals[0][0])
+        # print(seg.analogsignals[0].t_start, id(seg.analogsignals[0]), seg.analogsignals[0][0])
 
-    # workaround for NixIO bug https://github.com/NeuralEnsemble/python-neo/issues/535#issuecomment-389503181
+    # workaround for NixIO bug
+    # https://github.com/NeuralEnsemble/python-neo/issues/535#issuecomment-389503181
     for chx in Blk.channel_indexes:
         chx.analogsignals = []
 
