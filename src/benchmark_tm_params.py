@@ -46,7 +46,6 @@ tm_threshs = sp.linspace(0, 1, n)
 fixed_percentile = 75
 fixed_threshold = 0.5
 
-# force_recalc = True
 store_sorted = False
 
 # ██████  ███████  █████  ██████
@@ -57,20 +56,24 @@ store_sorted = False
 
 # get config
 config_path = os.path.abspath(sys.argv[1])
+
+# FIXME remove those guys
 # config_path = '../examples/example_config.ini'
+# config_path = "/home/georg/Dropbox/python/SeqPeelSort/examples/results/benchmark/config.ini"
 
 Config = get_config(config_path)
 print_msg('config file read from ' + config_path)
 unit_names = Config['general']['units']
+exp_name = Config['general']['experiment_name']
 
 # handling paths and creating output directory
 os.chdir(os.path.dirname(config_path))
-os.makedirs(os.path.join('results', 'benchmark'), exist_ok=True)
-sim_data_path = os.path.join('results', 'benchmark', 'sim_data_params.nix')
-shutil.copyfile(config_path, os.path.join('results', 'benchmark', 'config.ini'))
+os.makedirs(os.path.join(exp_name+'_results', 'benchmark'), exist_ok=True)
+sim_data_path = os.path.join(exp_name+'_results', 'benchmark', 'sim_data_params.nix')
+shutil.copyfile(config_path, os.path.join(exp_name+'_results', 'benchmark', 'config.ini'))
 
 # read in and simulate Templates
-Templates_path = os.path.join('results', 'templates.dill')
+Templates_path = os.path.join(exp_name+'_results', 'templates.dill')
 if not os.path.exists(Templates_path):
     print_msg('no templates found. Run SeqPeelSort first.')
     sys.exit()
@@ -152,7 +155,7 @@ for j, seg in enumerate(tqdm(Blk.segments, desc='template matching segment')):
 # store the sorted block?
 if store_sorted:
     from neo import NixIO
-    outpath = os.path.join('results', 'benchmark', 'sim_data_thresholds.nix')
+    outpath = os.path.join(exp_name+'_results', 'benchmark', 'sim_data_thresholds.nix')
     with NixIO(filename=outpath) as Writer:
         print_msg("writing block containing the sorted result to " + outpath)
         Writer.write_block(Blk)
@@ -178,7 +181,7 @@ for i, seg in enumerate(tqdm(Blk.segments, desc='error quantification')):
         Results = Results.append(pd.Series(data_tm, index=Results.columns), ignore_index=True)
 
 # store the quant result
-outpath = os.path.join('results', 'benchmark', 'tm_thresh_sweep_results.csv')
+outpath = os.path.join(exp_name+'_results', 'benchmark', 'tm_thresh_sweep_results.csv')
 Results.to_csv(outpath)
 
 # ██████  ██       ██████  ████████ ████████ ██ ███    ██  ██████
@@ -189,7 +192,7 @@ Results.to_csv(outpath)
 
 # %%
 # left here for future debug reasons
-# Results = pd.read_csv(os.path.join('results','benchmark','tm_thresh_sweep_results.csv'))
+# Results = pd.read_csv(os.path.join(exp_name+'_results','benchmark','tm_thresh_sweep_results.csv'))
 
 unit_combos = list(combinations(unit_names, 2))
 
@@ -217,7 +220,7 @@ for unit_combo in unit_combos:
         fig.tight_layout()
         # save figure
         unit_str = '_'.join(list(unit_combo)+[unit])
-        outpath = os.path.join('results', 'benchmark', 'thresh_sweep_' +
+        outpath = os.path.join(exp_name+'_results', 'benchmark', 'thresh_sweep_' +
                                unit_str+'.'+Config['general']['fig_format'])
         fig.savefig(outpath)
         plt.close(fig)
@@ -267,7 +270,7 @@ for j, seg in enumerate(tqdm(Blk.segments, desc='template matching segment')):
 # store the sorted block?
 if store_sorted:
     from neo import NixIO
-    outpath = os.path.join('results', 'benchmark', 'sim_data_percentiles.nix')
+    outpath = os.path.join(exp_name+'_results', 'benchmark', 'sim_data_percentiles.nix')
     with NixIO(filename=outpath) as Writer:
         Writer.write_block(Blk)
         print_msg("output written to "+outpath)
@@ -292,7 +295,7 @@ for i, seg in enumerate(tqdm(Blk.segments, desc='error quantification')):
         Results = Results.append(pd.Series(data_tm, index=Results.columns), ignore_index=True)
 
 # store the quant result
-outpath = os.path.join('results', 'benchmark', 'tm_percentile_sweep_results.csv')
+outpath = os.path.join(exp_name+'_results', 'benchmark', 'tm_percentile_sweep_results.csv')
 Results.to_csv(outpath)
 
 
@@ -303,7 +306,7 @@ Results.to_csv(outpath)
 # ██      ███████  ██████     ██       ██    ██ ██   ████  ██████
 
 # left for debug reasons
-# Results = pd.read_csv(os.path.join('results','benchmark','tm_percentile_sweep_results.csv'))
+# Results = pd.read_csv(os.path.join(exp_name+'_results','benchmark','tm_percentile_sweep_results.csv'))
 
 # %%
 unit_combos = list(combinations(unit_names, 2))
@@ -333,7 +336,7 @@ for unit_combo in unit_combos:
         fig.tight_layout()
         # save figure
         unit_str = '_'.join(list(unit_combo)+[unit])
-        outpath = os.path.join('results', 'benchmark', 'percentile_sweep_' +
+        outpath = os.path.join(exp_name+'_results', 'benchmark', 'percentile_sweep_' +
                                unit_str+'.'+Config['general']['fig_format'])
         fig.savefig(outpath)
         plt.close(fig)

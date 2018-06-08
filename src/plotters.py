@@ -1,3 +1,4 @@
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import scipy as sp
 import seaborn as sns
@@ -9,6 +10,7 @@ colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
 
 default_time = pq.s
 default_volt = pq.uV
+mpl.rcParams['figure.dpi'] = 300
 
 
 # ██   ██ ███████ ██      ██████  ███████ ██████  ███████
@@ -138,7 +140,7 @@ def plot_spike_histogram(Blk, Config, save=None):
 
     fig, ax = plt.subplots()
     # spike amp hist
-    ax.hist(spike_amps, bins=100, normed=True, color='black', alpha=0.8)
+    ax.hist(spike_amps, bins=50, normed=True, color='black', alpha=0.8)
     # kde line
     sns.kdeplot(Spike_amps, ax=ax, color='r', kernel='gau', alpha=0.8)
     # bounds if present
@@ -365,6 +367,7 @@ def plot_TM_result(Segment, Config, zoom=None, save=None):
         plot_SpikeTrain(SpikeTrain, ax=axes[2], color='red')
         axes[2].set_title('V peeled before (or raw if first unit) / score')
 
+        ax_scores.set_ylim(-0.05,1.05)
         # deco
         ax_scores.set_ylabel('TM score')
         fig.suptitle(unit)
