@@ -25,6 +25,13 @@ activate the environment (linux/mac: `source activate SeqPeelSort`, windows: `ac
 
 More on managing anaconda environments can be found in the  [official docs](https://conda.io/docs/user-guide/tasks/manage-environments.html) or [this blog post](https://medium.freecodecamp.org/why-you-need-python-environments-and-how-to-manage-them-with-conda-85f155f4353c)
 
+### Install the latest neo version
+Note: this is only required until `neo==0.7` is available via pip.
+
+in `src/neo`:
++ `pip uninstall neo` because `elephant` installs `neo==0.6`
++ `python setup.py install devel`
+
 ## Usage
 ### Data format
 SeqPeelSort is build around the python electrophysiology packages [neo](http://neuralensemble.org/neo/) and [elephant](http://elephant.readthedocs.io/en/latest/). As its data format, it uses [Nix](http://g-node.github.io/nix/).
