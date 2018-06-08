@@ -9,9 +9,11 @@ import copy
 """
 Data format requirements:
 The neo.core.Block that is read by SeqPeelSort must:
-1) consist of one or more segments - each segment is treated as a seperate trial
-and is sorted seperately
-2) in each segment, analogsignals[0] must contain the recording
+1) contain one or more segments - each segment is treated as a seperate trial
+and is sorted seperately (template matching. Templates are gathered from the
+entire recording)
+2) in each segment, analogsignals[0] must contain the recorded voltage
+3) Block must be written by NixIO
 """
 
 
