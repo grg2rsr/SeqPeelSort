@@ -45,12 +45,12 @@ def print_msg(msg, log=True):
         log (bool): write the msg to the log as well
 
     """
-    # TODO check for compatibility with windows / mac systems
+    # TODO check for compatibility with windows / mac systems       
     mem_used = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6
     mem_used = sp.around(mem_used, 2)
     memstr = '('+str(mem_used) + ' GB): '
-    print(colorama.Fore.CYAN + tp.humantime(time.time()-t0) +
-          ' elapsed\t' + memstr + '\t' + colorama.Fore.GREEN + msg)
+    timestr = tp.humantime(sp.around(time.time()-t0,2))
+    print(colorama.Fore.CYAN + timestr + '\t' +  memstr + '\t' + colorama.Fore.GREEN + msg)
     if log:
         with open('log.log', 'a+') as fH:
             log_str = tp.humantime(time.time()-t0) + ' elapsed\t' + memstr + '\t' + msg + os.linesep

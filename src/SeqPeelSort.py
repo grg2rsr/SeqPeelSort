@@ -34,16 +34,19 @@ print_msg('config file read from ' + config_path)
 os.chdir(os.path.dirname(config_path))
 data_path = Config['general']['data_path']
 
-os.makedirs('results', exist_ok=True)
-os.makedirs(os.path.join('results', 'plots'), exist_ok=True)
+exp_name = Config['general']['experiment_name']
+os.makedirs(exp_name+'_results', exist_ok=True)
+os.makedirs(os.path.join(exp_name+'_results', 'plots'), exist_ok=True)
 
 # read data
 with NixIO(filename=data_path) as Reader:
     Blk = Reader.read_block()
 
-Blk.name = Config['general']['experiment_name']
+Blk.name = exp_name
 print_msg('data read from ' + data_path)
 
+# for DEBUG
+Blk.segments = Blk.segments[:3]
 
 # ██████  ██████  ███████ ██████  ██████   ██████   ██████ ███████ ███████ ███████
 # ██   ██ ██   ██ ██      ██   ██ ██   ██ ██    ██ ██      ██      ██      ██
@@ -86,9 +89,12 @@ for seg in Blk.segments:
     Spikes_all.annotate(kind='all_spikes')
     seg.spiketrains.append(Spikes_all)
 
+N_spikes_total = sp.sum([seg.spiketrains[0].shape[0] for seg in Blk.segments])
+print_msg("total number of spikes found: "+str(N_spikes_total))
+
 # plot
 if Config['general']['fig_format'] is not None:
-    outpath = 'results/plots/spike_histogram'
+    outpath = os.path.join(exp_name+'_results', 'plots', 'spike_histogram')
     plot_spike_histogram(Blk, Config, save=outpath)
 
 # quit here if no bounds are set
@@ -99,11 +105,14 @@ if sp.any([Config[unit]['bounds'] == None for unit in Config['general']['units']
 # sort into units according to thresholds
 for i, unit in enumerate(Config['general']['units']):
     config = Config[unit]
+    N_spikes_unit = 0
     for seg in Blk.segments:
         st, = select_by_dict(seg.spiketrains, kind='all_spikes')
         Spikes = bounded_threshold(st, config['bounds'])
         Spikes.annotate(unit=unit, kind='thresholded')
         seg.spiketrains.append(Spikes)
+        N_spikes_unit += Spikes.shape[0]
+    print_msg("Number of spikes after thresholding for unit "+unit+" :"+str(N_spikes_unit))
 
 # adaptive thresholding
 for i, unit in enumerate(Config['general']['units']):
@@ -127,9 +136,10 @@ for i, unit in enumerate(Config['general']['units']):
 
         # plot
         if Config['general']['fig_format'] is not None:
-            outpath = 'results/plots/spike_amp_decrease_'+unit
+            outpath = os.path.join(exp_name+'_results', 'plots', 'spike_amp_decrease_'+unit)
             plot_amp_reduction(pfit, frate_at_spikes, spike_amps, Config, unit, save=outpath)
 
+        N_spikes_unit = 0
         if pfit is not None:
             for i, seg in enumerate(Blk.segments):
                 # estimate firing rate
@@ -154,6 +164,10 @@ for i, unit in enumerate(Config['general']['units']):
                 SpikeTrain_adap.annotate(unit=unit, kind='adaptive_thresholded')
                 seg.spiketrains.append(SpikeTrain_adap)
 
+                N_spikes_unit += SpikeTrain_adap.shape[0]
+
+            print_msg("Number of spikes after adaptive thresholding for unit "+unit+" :"+str(N_spikes_unit))
+
         else:
             # setting config to static thresholds
             print_msg("adaptive thresholding failed for unit "+unit)
@@ -162,7 +176,7 @@ for i, unit in enumerate(Config['general']['units']):
 # plot
 if Config['general']['fig_format'] is not None:
     for i, seg in enumerate(Blk.segments):
-        outpath = 'results/plots/thresholded_'+str(i)
+        outpath = os.path.join(exp_name+'_results', 'plots', 'thresholded_'+str(i))
         plot_spike_detect(seg, Config, save=outpath, zoom=Config['general']['zoom'])
 
 
@@ -196,16 +210,22 @@ for i, unit in enumerate(Config['general']['units']):
 
     Templates[unit] = neo.core.AnalogSignal(
         templates, t_start=T[0].t_start, sampling_rate=T[0].sampling_rate)
+
+    print_msg("Templates found for unit "+unit+" :"+str(Templates[unit].shape[1]))
 print_msg('... done.')
 
 # cleaning templates
 print_msg('cleaning templates')
+
+
+
 
 Templates_cleaned = {}
 Templates_good_inds = {}
 for i, unit in enumerate(Config['general']['units']):
     config = Config[unit]
     Templates_cleaned[unit], Templates_good_inds[unit] = clean_Templates(Templates[unit])
+    print_msg("Number of rejected templates for unit "+unit+" :"+str(Templates[unit].shape[1] - Templates_cleaned[unit].shape[1]))
 
 # simulating templates
 print_msg('simulating templates')
@@ -217,12 +237,12 @@ for i, unit in enumerate(Config['general']['units']):
 
     # plot templates
     if Config['general']['fig_format'] is not None:
-        outpath = os.path.join('results', 'plots', 'Templates_'+unit)
+        outpath = os.path.join(exp_name+'_results', 'plots', 'Templates_'+unit)
         plot_Templates(Templates[unit], Templates_sim[unit],
                        Templates_good_inds[unit], Config, save=outpath)
 
 # save templates
-with open(os.path.join('results', 'templates.dill'), 'wb') as fH:
+with open(os.path.join(exp_name+'_results', 'templates.dill'), 'wb') as fH:
     dill.dump(Templates_cleaned, fH)
 
 
@@ -276,9 +296,9 @@ print_msg("... done.")
 # plot
 if Config['general']['fig_format'] is not None:
     for i, seg in enumerate(Blk.segments):
-        outpath = 'results/plots/TM_result_'+str(i)
+        outpath = os.path.join(exp_name+'_results', 'plots', 'TM_result_'+str(i))
         plot_TM_result(seg, Config, zoom=None, save=outpath)
-        outpath = os.path.join('results', 'plots', 'TM_result_zoomed_'+str(i))
+        outpath = os.path.join(exp_name+'_results', 'plots', 'TM_result_zoomed_'+str(i))
         plot_TM_result(seg, Config, zoom=Config['general']['zoom'], save=outpath)
 
 
@@ -303,17 +323,19 @@ output_format = Config['general']['output_format']
 
 
 if output_format == 'nix':
-    outpath = os.path.join('results', os.path.splitext(
+    outpath = os.path.join(exp_name+'_results', os.path.splitext(
         os.path.basename(data_path))[0]+"_sorted.nix")
+    print_msg("writing output to "+outpath)
     with NixIO(filename=outpath) as Writer:
         Writer.write_block(Blk)
-        print_msg("output written to "+outpath)
 
 if output_format == 'csv':
     import pandas as pd
     for i, seg in enumerate(Blk.segments):
         for j, st in enumerate(seg.spiketrains):
-            outpath = os.path.join('results', os.path.splitext(os.path.basename(data_path))[
+            outpath = os.path.join(exp_name+'_results', os.path.splitext(os.path.basename(data_path))[
                                    0]+"_unit_"+st.annotations['unit']+"_trial_"+str(i)+"_sorted.csv")
+            print_msg("writing output to "+outpath)
             pd.Series(st.times).to_csv(path=outpath)
-            print_msg("output written to "+outpath)
+
+print_msg("...done")
