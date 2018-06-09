@@ -34,21 +34,24 @@ def zoom_obj(Obj, zoom, t_center=None):
     Returns:
         The zoomed neo object
     """
+    try:
+        Obj = copy.deepcopy(Obj)
+        if type(Obj) == neo.core.spiketrain.SpikeTrain:
+            if t_center is None:
+                t_center = Obj.t_start + (Obj.t_stop - Obj.t_start)/2
+            t_slice = (t_center - zoom/2, t_center + zoom/2)
+            Obj = Obj.time_slice(*t_slice)
+            Obj.t_start, Obj.t_stop = t_slice[0], t_slice[1]
 
-    Obj = copy.deepcopy(Obj)
-    if type(Obj) == neo.core.spiketrain.SpikeTrain:
-        if t_center is None:
-            t_center = Obj.t_start + (Obj.t_stop - Obj.t_start)/2
-        t_slice = (t_center - zoom/2, t_center + zoom/2)
-        Obj = Obj.time_slice(*t_slice)
-        Obj.t_start, Obj.t_stop = t_slice[0], t_slice[1]
-
-    if type(Obj) == neo.core.analogsignal.AnalogSignal:
-        if t_center is None:
-            t_center = Obj.times[0] + (Obj.times[-1] - Obj.times[0])/2
-        t_slice = (t_center - zoom/2, t_center + zoom/2)
-        Obj = Obj.time_slice(*t_slice)
-        Obj.t_start = t_slice[0]
+        if type(Obj) == neo.core.analogsignal.AnalogSignal:
+            if t_center is None:
+                t_center = Obj.times[0] + (Obj.times[-1] - Obj.times[0])/2
+            t_slice = (t_center - zoom/2, t_center + zoom/2)
+            Obj = Obj.time_slice(*t_slice)
+            Obj.t_start = t_slice[0]
+    except ValueError:
+        import pdb
+        pdb.set_trace()
     return Obj
 
 

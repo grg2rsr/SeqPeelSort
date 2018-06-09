@@ -53,7 +53,7 @@ def print_msg(msg, log=True):
     print(colorama.Fore.CYAN + timestr + '\t' +  memstr + '\t' + colorama.Fore.GREEN + msg)
     if log:
         with open('log.log', 'a+') as fH:
-            log_str = timestr + '\t' +  memstr + '\t' + msg)
+            log_str = timestr + '\t' +  memstr + '\t' + msg
             fH.writelines(log_str)
     pass
 
@@ -164,6 +164,7 @@ def bounded_threshold(SpikeTrain, bounds):
     Returns:
         neo.core.SpikeTrain: the resulting SpikeTrain
     """
+    
     SpikeTrain = copy.deepcopy(SpikeTrain)
     peak_amps = SpikeTrain.waveforms.max(axis=1)
 
@@ -185,7 +186,6 @@ def adaptive_threshold(SpikeTrain, adaptive_thresh_lower, adaptive_thresh_upper)
         neo.core.SpikeTrain: the resulting SpikeTrain
     """
     SpikeTrain = copy.deepcopy(SpikeTrain)
-    peak_amps = SpikeTrain.waveforms.max(axis=1)
 
     spike_inds = get_spike_inds(SpikeTrain)
     spike_amps = SpikeTrain.waveforms.max(axis=1)
@@ -684,6 +684,9 @@ def simulate_dataset(Templates, Rates, Config, sim_dur=1*pq.s, save=None):
     # write block to disk
     if save is not None:
         sim_data_path = save
+        # remove file if exists
+        if os.path.exists(sim_data_path):
+            os.remove(sim_data_path)
         from neo import NixIO
         with NixIO(filename=sim_data_path) as Writer:
             print_msg("writing simulated data to " + sim_data_path)

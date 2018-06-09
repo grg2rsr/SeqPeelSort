@@ -30,7 +30,7 @@ Note: this is only required until `neo==0.7` is available via pip.
 
 in `src/neo`:
 + `pip uninstall neo` because `elephant` installs `neo==0.6`
-+ `python setup.py install devel`
++ `python setup.py develop`
 
 ## Usage
 ### Data format
@@ -77,7 +77,9 @@ To my knowledge, no ground truth data set for SSR recordings is available. If th
 
 In order to nevertheless estimate the sorting performance of the algorithm, a simulated dataset can be generated from extracted templates, and the sorting performance of the algorithm is assessed with this artificial ground truth dataset. This is done by generating an artificial spike train (homogeneous poisson process with a removal of spikes that would fall into the refractory period of a previous spike) and placing spike waveforms at the random time points.
 
-Two benchmarks are available: 1) `benchmark_tm_params.py` can be used to determine optimal template matching parameters for the recording. Here, either threshold or percentile parameters of the algorithm are swept over the valid range in a brute force manner while the other is held fixed. 2) `benchmark_rates.py` can be used to estimate absolute template matching performance. For each unit combination, the firing rates are swept and the generated data is subjected to the template matching and peeling steps of the algorithm.
+Two benchmarks are available:
+1. `benchmark_tm_params.py` can be used to determine optimal template matching parameters for the recording. Here, either threshold or percentile parameters of the algorithm are swept over the valid range in a brute force manner while the other is held fixed.
+2. `benchmark_rates.py` can be used to estimate absolute template matching performance. For each unit combination, the firing rates are swept and the generated data is subjected to the template matching and peeling steps of the algorithm.
 
 The results are placed in a subfolder `benchmark`. Examples can be found here XX run it and link gin
 
@@ -95,7 +97,7 @@ python benchmark_rates.py config.ini
 ```
 to get an estimate of the performance of the template matching step, including plots comparing the template matching result to a purely thresholding based result.
 
-## Planned future development
+## future development
 + multithreaded template match for performance increase
 + expanding IO options based on users needs
 
