@@ -36,10 +36,10 @@ tp.banner("author: Georg Raiser - grg2rsr@gmail.com", 78)
 # ██ ██   ████ ██
 
 # parameters for sim
-t_stop_sim = 1 * pq.s
-rate_start = 25 * pq.Hz
-rate_stop = 400 * pq.Hz
-n_rates = 6
+t_stop_sim = 2   * pq.s
+rate_start = 10 * pq.Hz
+rate_stop = 300 * pq.Hz
+n_rates = 21
 
 store_sorted = False
 
@@ -59,15 +59,16 @@ config_path = os.path.abspath(sys.argv[1])
 Config = get_config(config_path)
 print_msg('config file read from ' + config_path)
 unit_names = Config['general']['units']
+exp_name = Config['general']['experiment_name']
 
 # handling paths and creating output directory
 os.chdir(os.path.dirname(config_path))
-os.makedirs(os.path.join('results', 'benchmark'), exist_ok=True)
-sim_data_path = os.path.join('results', 'benchmark', 'sim_data_rates.nix')
-shutil.copyfile(config_path, os.path.join('results', 'benchmark', 'config.ini'))
+os.makedirs(os.path.join(exp_name+'_results', 'benchmark'), exist_ok=True)
+sim_data_path = os.path.join(exp_name+'_results', 'benchmark', 'sim_data_rates.nix')
+shutil.copyfile(config_path, os.path.join(exp_name+'_results', 'benchmark', 'config.ini'))
 
 # read in and simulate Templates
-Templates_path = os.path.join('results', 'templates.dill')
+Templates_path = os.path.join(exp_name+'_results', 'templates.dill')
 if not os.path.exists(Templates_path):
     print_msg('no templates found. Run SeqPeelSort first.')
     sys.exit()
@@ -94,7 +95,7 @@ for i in range(len(rate_combos)):
     Rates.append(dict(zip(unit_names, rate_combos[i])))
 
 print_msg("generating simulated dataset with fixed rate")
-Blk = simulate_dataset(Templates_sim, Rates, Config, sim_dur=1*pq.s, save=sim_data_path)
+Blk = simulate_dataset(Templates_sim, Rates, Config, sim_dur=t_stop_sim, save=sim_data_path)
 
 
 # ███████  ██████  ██████  ████████
@@ -153,7 +154,7 @@ for seg in tqdm(Blk.segments, desc='thresholding'):
 # store the sorted block?
 if store_sorted:
     from neo import NixIO
-    outpath = os.path.join('results', 'benchmark', 'sim_data_rates.nix')
+    outpath = os.path.join(exp_name+'_results', 'benchmark', 'sim_data_rates.nix')
     with NixIO(filename=outpath) as Writer:
         Writer.write_block(Blk)
         print_msg("output written to "+outpath)
@@ -184,7 +185,7 @@ for i, seg in enumerate(tqdm(Blk.segments, desc='error quantification')):
         Results = Results.append(pd.Series(data_th, index=Results.columns), ignore_index=True)
 
 # store the quant result
-outpath = os.path.join('results', 'benchmark', 'rates_sweep_result.csv')
+outpath = os.path.join(exp_name+'_results', 'benchmark', 'rates_sweep_result.csv')
 Results.to_csv(outpath)
 
 
@@ -194,15 +195,15 @@ Results.to_csv(outpath)
 # ██      ██      ██    ██    ██       ██    ██ ██  ██ ██ ██    ██
 # ██      ███████  ██████     ██       ██    ██ ██   ████  ██████
 
-Results = pd.read_csv(os.path.join('results', 'benchmark', 'rates_sweep_result.csv'))
+Results = pd.read_csv(os.path.join(exp_name+'_results', 'benchmark', 'rates_sweep_result.csv'))
 
 colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
 
 # %% randomly inspect single sorting results
 rand_inds = random.randint(len(Blk.segments), size=5)
 for i, seg in enumerate([Blk.segments[ind] for ind in rand_inds]):
-    outpath = os.path.join('results', 'benchmark', 'segment_'+str(rand_inds[i]))
-    figures = plot_TM_result(seg, Config, zoom=1*pq.s, save=outpath)
+    outpath = os.path.join(exp_name+'_results', 'benchmark', 'segment_'+str(rand_inds[i]))
+    figures = plot_TM_result(seg, Config, zoom=0.25*pq.s, save=outpath)
 
     for j, unit in enumerate(unit_names):
         fig = figures[unit]
@@ -240,7 +241,7 @@ for unit_combo in unit_combos:
         fig.tight_layout()
         # save figure
         unit_str = '_'.join(list(unit_combo)+[unit])
-        outpath = os.path.join('results', 'benchmark', 'rate_sweep_absolute_' +
+        outpath = os.path.join(exp_name+'_results', 'benchmark', 'rate_sweep_absolute_' +
                                unit_str+'.'+Config['general']['fig_format'])
         fig.savefig(outpath)
         plt.close(fig)
@@ -272,18 +273,18 @@ for unit_combo in unit_combos:
 
             res_diff = res_piv_tm - res_piv_thresh
 
-            sns.heatmap(res_diff[::-1], ax=axes[i], cmap='PiYG', vmin=-0.25, vmax=0.25, cbar=False)
+            sns.heatmap(res_diff[::-1], ax=axes[i], cmap='PiYG_r', vmin=-0.25, vmax=0.25, cbar=False)
             axes[i].set_aspect('equal')
             axes[i].set_title(err_param)
 
         fig.suptitle(unit)
         cbar = fig.colorbar(axes[0].get_children()[0], ax=axes[1])
-        cbar.set_label('fractional change')
+        cbar.set_label('TM - thresholded')
 
         fig.tight_layout()
         # save figure
         unit_str = '_'.join(list(unit_combo)+[unit])
-        outpath = os.path.join('results', 'benchmark', 'rate_sweep_comparison_' +
+        outpath = os.path.join(exp_name+'_results', 'benchmark', 'rate_sweep_comparison_' +
                                unit_str+'.'+Config['general']['fig_format'])
         fig.savefig(outpath)
         plt.close(fig)

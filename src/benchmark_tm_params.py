@@ -37,8 +37,8 @@ tp.banner("author: Georg Raiser - grg2rsr@gmail.com", 78)
 # ██ ██   ████ ██
 
 # parameters for sim
-n = 5
-fixed_rate = 250 * pq.Hz
+n = 22
+fixed_rate = 100 * pq.Hz
 t_stop_sim = 1 * pq.s
 tm_percentiles = sp.linspace(0, 100, n)
 tm_threshs = sp.linspace(0, 1, n)
@@ -56,10 +56,6 @@ store_sorted = False
 
 # get config
 config_path = os.path.abspath(sys.argv[1])
-
-# FIXME remove those guys
-# config_path = '../examples/example_config.ini'
-# config_path = "/home/georg/Dropbox/python/SeqPeelSort/examples/results/benchmark/config.ini"
 
 Config = get_config(config_path)
 print_msg('config file read from ' + config_path)
@@ -92,6 +88,7 @@ for unit in unit_names:
 # ███████ ██ ██ ████ ██
 #      ██ ██ ██  ██  ██
 # ███████ ██ ██      ██
+
 tm_percentile_combos = list(product(tm_percentiles, repeat=len(unit_names)))
 tm_thresh_combos = list(product(tm_threshs, repeat=len(unit_names)))
 
