@@ -367,7 +367,7 @@ def plot_TM_result(Segment, Config, zoom=None, save=None):
         plot_AnalogSignal(Asig, lw=1, color='k', alpha=0.5, ax=axes[2])
         plot_AnalogSignal(Score_TM, lw=1, color='r', alpha=0.5, ax=ax_scores, rescale=False)
         plt.axhline(config['tm_thresh'], lw=1, linestyle=':', color='maroon')
-        plot_SpikeTrain(SpikeTrain, ax=axes[2], color='red')
+        plot_SpikeTrain(SpikeTrain, ax=axes[2], color='red', alpha=0.7,zorder=-10)
         axes[2].set_title('V peeled before (or raw if first unit) / score')
 
         ax_scores.set_ylim(-0.05,1.05)
