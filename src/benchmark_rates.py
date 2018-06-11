@@ -36,7 +36,7 @@ tp.banner("author: Georg Raiser - grg2rsr@gmail.com", 78)
 # ██ ██   ████ ██
 
 # parameters for sim
-t_stop_sim = 2   * pq.s
+t_stop_sim = 3  * pq.s
 rate_start = 10 * pq.Hz
 rate_stop = 300 * pq.Hz
 n_rates = 21
@@ -94,7 +94,7 @@ Rates = []
 for i in range(len(rate_combos)):
     Rates.append(dict(zip(unit_names, rate_combos[i])))
 
-print_msg("generating simulated dataset with fixed rate")
+print_msg("generating simulated dataset with variable rates")
 Blk = simulate_dataset(Templates_sim, Rates, Config, sim_dur=t_stop_sim, save=sim_data_path)
 
 

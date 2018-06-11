@@ -28,8 +28,6 @@ from config import get_config
 tp.banner("benchmarking SeqPeelSort", 78)
 tp.banner("author: Georg Raiser - grg2rsr@gmail.com", 78)
 
-# %%
-
 # ██ ███    ██ ██
 # ██ ████   ██ ██
 # ██ ██ ██  ██ ██

@@ -45,9 +45,6 @@ with NixIO(filename=data_path) as Reader:
 Blk.name = exp_name
 print_msg('data read from ' + data_path)
 
-# for DEBUG
-Blk.segments = Blk.segments[:3]
-
 # ██████  ██████  ███████ ██████  ██████   ██████   ██████ ███████ ███████ ███████
 # ██   ██ ██   ██ ██      ██   ██ ██   ██ ██    ██ ██      ██      ██      ██
 # ██████  ██████  █████   ██████  ██████  ██    ██ ██      █████   ███████ ███████
@@ -178,6 +175,7 @@ if Config['general']['fig_format'] is not None:
     for i, seg in enumerate(Blk.segments):
         outpath = os.path.join(exp_name+'_results', 'plots', 'thresholded_'+str(i))
         plot_spike_detect(seg, Config, save=outpath, zoom=Config['general']['zoom'])
+        plot_spike_detect(seg, Config, zoom=Config['general']['zoom'])
 
 
 # ████████ ███████ ███    ███ ██████  ██       █████  ████████ ███████ ███████
@@ -217,9 +215,6 @@ print_msg('... done.')
 # cleaning templates
 print_msg('cleaning templates')
 
-
-
-
 Templates_cleaned = {}
 Templates_good_inds = {}
 for i, unit in enumerate(Config['general']['units']):
@@ -238,8 +233,7 @@ for i, unit in enumerate(Config['general']['units']):
     # plot templates
     if Config['general']['fig_format'] is not None:
         outpath = os.path.join(exp_name+'_results', 'plots', 'Templates_'+unit)
-        plot_Templates(Templates[unit], Templates_sim[unit],
-                       Templates_good_inds[unit], Config, save=outpath)
+        plot_Templates(Templates[unit], Templates_sim[unit], Templates_good_inds[unit], Config, save=outpath)
 
 # save templates
 with open(os.path.join(exp_name+'_results', 'templates.dill'), 'wb') as fH:
@@ -262,7 +256,6 @@ def tm_run(AnalogSignal, templates_sim, config):
     V_peeled, V_recons = peel(AnalogSignal, SpikeTrain_TM, Scores_TM, templates_sim)
 
     return V_peeled, V_recons, SpikeTrain_TM, Score_TM
-
 
 for seg in tqdm(Blk.segments, desc='template matching segment'):
 
@@ -318,9 +311,8 @@ Blk.segments = Res_segs
 
 for chx in Blk.channel_indexes:
     chx.analogsignals = []
-
+    
 output_format = Config['general']['output_format']
-
 
 if output_format == 'nix':
     outpath = os.path.join(exp_name+'_results', os.path.splitext(

@@ -135,15 +135,19 @@ def refractory_correct_SpikeTrain(SpikeTrain, ref_per=2*pq.ms):
     Returns:
         neo.core.SpikeTrain: the corrected SpikeTrain
     """
-
-    Tx, Ty = sp.meshgrid(SpikeTrain.times, SpikeTrain.times)
-    T = (Tx < Ty+ref_per)
+    ind = 0
+    next_ind = 0
+    good_inds = []
     try:
-        good_inds = sp.unique(sp.argmin(T, axis=1))
-        return SpikeTrain[good_inds]
-    except ValueError:  # if empty
+        while sp.any(sp.argmax(SpikeTrain.times - SpikeTrain.times[ind] > ref_per)):
+            next_ind = sp.argmax(SpikeTrain.times - SpikeTrain.times[ind] > ref_per)
+            good_inds.append(next_ind)
+            ind = next_ind
+    except IndexError:
+        # when empty
         return SpikeTrain
 
+    return SpikeTrain[good_inds]
 
 # ████████ ██   ██ ██████  ███████ ███████ ██   ██  ██████  ██      ██████  ██ ███    ██  ██████
 #    ██    ██   ██ ██   ██ ██      ██      ██   ██ ██    ██ ██      ██   ██ ██ ████   ██ ██
@@ -164,7 +168,7 @@ def bounded_threshold(SpikeTrain, bounds):
     Returns:
         neo.core.SpikeTrain: the resulting SpikeTrain
     """
-    
+
     SpikeTrain = copy.deepcopy(SpikeTrain)
     peak_amps = SpikeTrain.waveforms.max(axis=1)
 
@@ -473,8 +477,7 @@ def template_match(AnalogSignal, Templates_sim):
     Scores = 1-Scores  # remap from 0 to 1
 
     # to neo object
-    Scores = neo.core.AnalogSignal(Scores, units=pq.dimensionless,
-                                   t_start=AnalogSignal.times[0], sampling_rate=AnalogSignal.sampling_rate, kind='Scores')
+    Scores = neo.core.AnalogSignal(Scores, units=pq.dimensionless, t_start=AnalogSignal.times[0], sampling_rate=AnalogSignal.sampling_rate, kind='Scores')
     return Scores
 
 def spike_detect_on_TM(Scores, wsize, percentile=90, thresh=0.5):
@@ -502,13 +505,13 @@ def spike_detect_on_TM(Scores, wsize, percentile=90, thresh=0.5):
     # NOTE not necessary, but left in here in case of future adaptations. Might
     # be useful when templates are very ambiguous
     # smooth Scores_lim to avoid muliple detections
-    # Score_lim = ele.signal_processing.butter(Score_lim,lowpass_freq=100*pq.Hz)
+    # Score_lim = ele.signal_processing.butter(Score_lim, lowpass_freq=100*pq.Hz)
 
     # find peaks
     SpikeTrain = spike_detect(Score_lim, [thresh, 1.01]*pq.dimensionless, lowpass_freq=None)
 
     # remove doublets in case
-    SpikeTrain = refractory_correct_SpikeTrain(SpikeTrain)
+    SpikeTrain = refractory_correct_SpikeTrain(SpikeTrain,)
 
     # correction for template offset
     if SpikeTrain.shape[0] > 0:
@@ -564,18 +567,16 @@ def peel(AnalogSignal, SpikeTrain, Scores, templates_sim):
     for i, t in enumerate(SpikeTrain):
         best_template = templates_sim[:, best_template_inds[i]]
         # .time_slice() method can not be used here, because it returns a view
-        # wow this sucks in uglyness - the additional sampling period added is needed cause otherwise window is 1 too short ...
-        try:
-            inds = times2inds(V_recons.times, V_recons.time_slice(t, t+wsize).times[[0, -1]])
-            inds[1] += 1
-        except ValueError:
-            import pdb
-            pdb.set_trace()
+        inds = times2inds(V_recons.times, V_recons.time_slice(t, t+wsize).times[[0, -1]])
+        inds[1] += 1 # necessary to avoid indexing error
         V_recons[slice(*inds)] += best_template
         # V_linfix[slice(*inds)] += neo.core.AnalogSignal(sp.linspace(best_template[0].magnitude,best_template[-1].magnitude,best_template.shape[0]) * best_template.units,t_start=t,sampling_period=best_template.sampling_period)
 
     V_remain = AnalogSignal.copy() - V_recons  # + V_linfix
     # V_remain = AnalogSignal.copy() - V_recons + V_linfix
+
+    # high pass filer to smoothen edges introduced by template removal
+    V_remain = ele.signal_processing.butter(V_remain,highpass_freq=100*pq.Hz)
 
     return V_remain, V_recons
 
@@ -605,10 +606,8 @@ def generate_V_sim(Templates, rates, Config, t_stop_sim, ref_corr=False):
 
     # ini emtpy voltage with noise level inferred from templates
     # this likely slightly overestimates
-    noise_sd = (Templates[unit_names[0]] - Templates[unit_names[0]
-                                                     ].mean(axis=1)[:, sp.newaxis]).std(axis=1).std()
-    V_sim = neo.core.AnalogSignal(sp.randn(int((fs*t_stop_sim).simplified.magnitude)) *
-                                  noise_sd, t_stop=t_stop_sim, sampling_rate=fs, units=Templates[unit_names[0]].units)
+    noise_sd = (Templates[unit_names[0]] - Templates[unit_names[0]].mean(axis=1)[:, sp.newaxis]).std(axis=1).std()
+    V_sim = neo.core.AnalogSignal(sp.randn(int((fs*t_stop_sim).simplified.magnitude)) * noise_sd, t_stop=t_stop_sim, sampling_rate=fs, units=Templates[unit_names[0]].units)
 
     # V_sim filling with spikes
     SpikeTrains_true = {}
@@ -617,8 +616,7 @@ def generate_V_sim(Templates, rates, Config, t_stop_sim, ref_corr=False):
 
         # generate SpikeTrain
         rate = rates[unit]
-        SpikeTrain = ele.spike_train_generation.homogeneous_poisson_process(
-            t_stop=t_stop_sim, rate=rate)
+        SpikeTrain = ele.spike_train_generation.homogeneous_poisson_process(t_stop=t_stop_sim, rate=rate)
         SpikeTrain.sampling_rate = fs
 
         # remove unrealistic spikes
@@ -670,7 +668,7 @@ def simulate_dataset(Templates, Rates, Config, sim_dur=1*pq.s, save=None):
     for i, rates in enumerate(tqdm(Rates)):
 
         # simulate a recording
-        V_sim, SpikeTrains_true = generate_V_sim(Templates, rates, Config, sim_dur)
+        V_sim, SpikeTrains_true = generate_V_sim(Templates, rates, Config, sim_dur, ref_corr=2*pq.ms)
 
         V_sim.annotate(kind='original')
         seg = neo.core.Segment()
