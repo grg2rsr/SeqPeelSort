@@ -50,7 +50,8 @@ def print_msg(msg, log=True):
     mem_used = sp.around(mem_used, 2)
     memstr = '('+str(mem_used) + ' GB): '
     timestr = tp.humantime(sp.around(time.time()-t0,2))
-    print(colorama.Fore.CYAN + timestr + '\t' +  memstr + '\t' + colorama.Fore.GREEN + msg)
+    print(colorama.Fore.CYAN + timestr + '\t' +  memstr + '\t' +
+          colorama.Fore.GREEN + msg)
     if log:
         with open('log.log', 'a+') as fH:
             log_str = timestr + '\t' +  memstr + '\t' + msg
@@ -194,8 +195,11 @@ def adaptive_threshold(SpikeTrain, adaptive_thresh_lower, adaptive_thresh_upper)
     spike_inds = get_spike_inds(SpikeTrain)
     spike_amps = SpikeTrain.waveforms.max(axis=1)
 
-    good_inds = sp.logical_and(adaptive_thresh_lower.magnitude[spike_inds] < spike_amps.magnitude,
-                               adaptive_thresh_upper.magnitude[spike_inds] > spike_amps.magnitude)
+    cond_1 = adaptive_thresh_lower.magnitude[spike_inds] < spike_amps.magnitude
+    cond_2 = adaptive_thresh_upper.magnitude[spike_inds] > spike_amps.magnitude
+
+    good_inds = sp.logical_and(cond_1,cond_2)
+
     SpikeTrain = SpikeTrain[good_inds.flatten()]
 
     return SpikeTrain
@@ -224,7 +228,8 @@ def spike_detect(AnalogSignal, bounds, lowpass_freq=1000*pq.Hz):
 
     # filter to avoid multiple peaks
     if lowpass_freq is not None:
-        AnalogSignal = ele.signal_processing.butter(AnalogSignal, lowpass_freq=lowpass_freq)
+        AnalogSignal = ele.signal_processing.butter(AnalogSignal,
+                                                    lowpass_freq=lowpass_freq)
 
     # find relative maxima / minima
     peak_inds = signal.argrelmax(AnalogSignal)[0]
@@ -233,8 +238,11 @@ def spike_detect(AnalogSignal, bounds, lowpass_freq=1000*pq.Hz):
     peak_amps = AnalogSignal.magnitude[peak_inds, :, sp.newaxis] * AnalogSignal.units
 
     tvec = AnalogSignal.times
-    SpikeTrain = neo.core.SpikeTrain(tvec[peak_inds], t_start=AnalogSignal.t_start,
-                                     t_stop=AnalogSignal.t_stop, sampling_rate=AnalogSignal.sampling_rate, waveforms=peak_amps)
+    SpikeTrain = neo.core.SpikeTrain(tvec[peak_inds],
+                                     t_start=AnalogSignal.t_start,
+                                     t_stop=AnalogSignal.t_stop,
+                                     sampling_rate=AnalogSignal.sampling_rate,
+                                     waveforms=peak_amps)
 
     # subset detected SpikeTrain by bounds
     SpikeTrain = bounded_threshold(SpikeTrain, bounds)
@@ -322,8 +330,10 @@ def simulate_Templates(Templates, n_sim=100, n_comp=5):
     # generate simulated spike shape from distribution
     Templates_sim_Mat = pca.inverse_transform(Shape_dist.resample(n_sim).T).T
 
-    Templates_sim = neo.core.AnalogSignal(
-        Templates_sim_Mat, units=Templates.units, sampling_rate=Templates.sampling_rate, t_start=Templates.t_start)
+    Templates_sim = neo.core.AnalogSignal(Templates_sim_Mat,
+                                          units=Templates.units,
+                                          sampling_rate=Templates.sampling_rate,
+                                          t_start=Templates.t_start)
 
     return Templates_sim, pca
 
@@ -342,8 +352,10 @@ def clean_Templates(Templates):
     clf = LocalOutlierFactor(n_neighbors=20)
     good_inds = clf.fit_predict(templates.T) == 1
 
-    Templates_cleaned = neo.core.AnalogSignal(
-        templates[:, good_inds], units=Templates.units, t_start=Templates.t_start, sampling_rate=Templates.sampling_rate)
+    Templates_cleaned = neo.core.AnalogSignal(templates[:, good_inds],
+                                              units=Templates.units,
+                                              t_start=Templates.t_start,
+                                              sampling_rate=Templates.sampling_rate)
 
     return Templates_cleaned, good_inds
 
@@ -392,17 +404,19 @@ def calc_spike_amp_reduction(frate_at_spikes, spike_amps, N=1000):
         list: the parameters of best fit
     """
 
-    params = (spike_amps.max().magnitude, frate_at_spikes.mean().magnitude, spike_amps.min().magnitude)
-    bounds = ((spike_amps.min().magnitude, 0, 0),
-              (spike_amps.max().magnitude, sp.inf, spike_amps.max().magnitude))
+    params = (spike_amps.max().magnitude, frate_at_spikes.mean().magnitude,
+              spike_amps.min().magnitude)
+    bounds = ((spike_amps.min().magnitude, 0, 0), (spike_amps.max().magnitude,
+              sp.inf, spike_amps.max().magnitude))
 
     if frate_at_spikes.shape[0] > N:
         inds = sp.random.randint(0, frate_at_spikes.shape[0], size=N)
     else:
         inds = range(frate_at_spikes.shape[0])
     try:
-        pfit = curve_fit(
-            exp_decay, frate_at_spikes.magnitude[inds], spike_amps.magnitude[inds], p0=params, bounds=bounds)[0]
+        pfit = curve_fit(exp_decay, frate_at_spikes.magnitude[inds],
+                         spike_amps.magnitude[inds], p0=params,
+                         bounds=bounds)[0]
         return pfit
     except RuntimeError:
         return None
@@ -431,10 +445,15 @@ def calc_adaptive_threshold(frate, pfit, bounds):
     adap_bound_lower = exp_decay(frate.magnitude, *pfit_lower)
     adap_bound_upper = exp_decay(frate.magnitude, *pfit_upper)
 
-    adap_bound_lower = neo.core.AnalogSignal(
-        adap_bound_lower, units=bounds[0].units, t_start=frate.t_start, sampling_rate=frate.sampling_rate)
-    adap_bound_upper = neo.core.AnalogSignal(
-        adap_bound_upper, units=bounds[1].units, t_start=frate.t_start, sampling_rate=frate.sampling_rate)
+    adap_bound_lower = neo.core.AnalogSignal(adap_bound_lower,
+                                             units=bounds[0].units,
+                                             t_start=frate.t_start,
+                                             sampling_rate=frate.sampling_rate)
+
+    adap_bound_upper = neo.core.AnalogSignal(adap_bound_upper,
+                                             units=bounds[1].units,
+                                             t_start=frate.t_start,
+                                             sampling_rate=frate.sampling_rate)
 
     return adap_bound_lower, adap_bound_upper
 
@@ -456,8 +475,7 @@ def template_match(AnalogSignal, Templates_sim):
         Templates_sim (neo.core.AnalogSignal): the simulated templates
 
     Returns:
-        neo.core.AnalogSignal: the resulting scores of the template
-            match
+        neo.core.AnalogSignal: the resulting scores of the template match
     """
     # TODO OPTIMIZE - multithread template match
 
@@ -477,7 +495,10 @@ def template_match(AnalogSignal, Templates_sim):
     Scores = 1-Scores  # remap from 0 to 1
 
     # to neo object
-    Scores = neo.core.AnalogSignal(Scores, units=pq.dimensionless, t_start=AnalogSignal.times[0], sampling_rate=AnalogSignal.sampling_rate, kind='Scores')
+    Scores = neo.core.AnalogSignal(Scores, units=pq.dimensionless,
+                                   t_start=AnalogSignal.times[0],
+                                   sampling_rate=AnalogSignal.sampling_rate,
+                                   kind='Scores')
     return Scores
 
 def spike_detect_on_TM(Scores, wsize, percentile=90, thresh=0.5):
@@ -499,8 +520,10 @@ def spike_detect_on_TM(Scores, wsize, percentile=90, thresh=0.5):
     """
 
     # AnalogSignal of Score percentile
-    Score_lim = neo.core.AnalogSignal(sp.percentile(
-        Scores, percentile, axis=1), units=pq.dimensionless, t_start=Scores.times[0], sampling_rate=Scores.sampling_rate)
+    Score_lim = neo.core.AnalogSignal(sp.percentile(Scores, percentile, axis=1),
+                                      units=pq.dimensionless,
+                                      t_start=Scores.times[0],
+                                      sampling_rate=Scores.sampling_rate)
 
     # NOTE not necessary, but left in here in case of future adaptations. Might
     # be useful when templates are very ambiguous
@@ -508,7 +531,8 @@ def spike_detect_on_TM(Scores, wsize, percentile=90, thresh=0.5):
     # Score_lim = ele.signal_processing.butter(Score_lim, lowpass_freq=100*pq.Hz)
 
     # find peaks
-    SpikeTrain = spike_detect(Score_lim, [thresh, 1.01]*pq.dimensionless, lowpass_freq=None)
+    SpikeTrain = spike_detect(Score_lim, [thresh, 1.01]*pq.dimensionless,
+                              lowpass_freq=None)
 
     # remove doublets in case
     SpikeTrain = refractory_correct_SpikeTrain(SpikeTrain,)
@@ -556,8 +580,10 @@ def peel(AnalogSignal, SpikeTrain, Scores, templates_sim):
     best_template_inds = sp.argmax(Scores, axis=1)[inds]
 
     # ini empty stuff
-    V_recons = neo.core.AnalogSignal(sp.zeros(
-        Scores.times.shape[0]), units=templates_sim.units, t_start=Scores.times[0], sampling_rate=Scores.sampling_rate)
+    V_recons = neo.core.AnalogSignal(sp.zeros(Scores.times.shape[0]),
+                                     units=templates_sim.units,
+                                     t_start=Scores.times[0],
+                                     sampling_rate=Scores.sampling_rate)
 
     # NOTE lin fix related lines commented out. Not necessary (actually
     # decreases sorting performance) but left in in case of future
@@ -607,7 +633,11 @@ def generate_V_sim(Templates, rates, Config, t_stop_sim, ref_corr=False):
     # ini emtpy voltage with noise level inferred from templates
     # this likely slightly overestimates
     noise_sd = (Templates[unit_names[0]] - Templates[unit_names[0]].mean(axis=1)[:, sp.newaxis]).std(axis=1).std()
-    V_sim = neo.core.AnalogSignal(sp.randn(int((fs*t_stop_sim).simplified.magnitude)) * noise_sd, t_stop=t_stop_sim, sampling_rate=fs, units=Templates[unit_names[0]].units)
+
+    V_sim = neo.core.AnalogSignal(sp.randn(int((fs*t_stop_sim).simplified.magnitude)) * noise_sd,
+                                  t_stop=t_stop_sim,
+                                  sampling_rate=fs,
+                                  units=Templates[unit_names[0]].units)
 
     # V_sim filling with spikes
     SpikeTrains_true = {}
@@ -616,7 +646,8 @@ def generate_V_sim(Templates, rates, Config, t_stop_sim, ref_corr=False):
 
         # generate SpikeTrain
         rate = rates[unit]
-        SpikeTrain = ele.spike_train_generation.homogeneous_poisson_process(t_stop=t_stop_sim, rate=rate)
+        SpikeTrain = ele.spike_train_generation.homogeneous_poisson_process(t_stop=t_stop_sim,
+                                                                            rate=rate)
         SpikeTrain.sampling_rate = fs
 
         # remove unrealistic spikes
@@ -668,7 +699,8 @@ def simulate_dataset(Templates, Rates, Config, sim_dur=1*pq.s, save=None):
     for i, rates in enumerate(tqdm(Rates)):
 
         # simulate a recording
-        V_sim, SpikeTrains_true = generate_V_sim(Templates, rates, Config, sim_dur, ref_corr=2*pq.ms)
+        V_sim, SpikeTrains_true = generate_V_sim(Templates, rates, Config,
+                                                 sim_dur, ref_corr=2*pq.ms)
 
         V_sim.annotate(kind='original')
         seg = neo.core.Segment()

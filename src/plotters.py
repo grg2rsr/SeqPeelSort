@@ -186,7 +186,8 @@ def plot_amp_reduction(pfit, frate_at_spikes, spike_amps, Config, unit, save=Non
 
     # the relationship
     ax.plot(frate_at_spikes, spike_amps, 'o', color='k', alpha=0.75)
-    tvec_fit = sp.linspace(frate_at_spikes.min().magnitude, frate_at_spikes.max().magnitude, 100)
+    tvec_fit = sp.linspace(frate_at_spikes.min().magnitude,
+                           frate_at_spikes.max().magnitude, 100)
     ax.plot(tvec_fit, exp_decay(tvec_fit, *pfit), color='r', lw=2, alpha=0.8)
 
     # adding the bounds
@@ -227,7 +228,8 @@ def plot_spike_detect(Segment, Config, save=None, zoom=None):
             St_choice = 'adaptive_thresholded'
         else:
             St_choice = 'thresholded'
-        SpikeTrain, = select_by_dict(Segment.spiketrains, unit=unit, kind=St_choice)
+        SpikeTrain, = select_by_dict(Segment.spiketrains, unit=unit,
+                                     kind=St_choice)
         if zoom is not None:
             SpikeTrain = zoom_obj(SpikeTrain, zoom)
         plot_SpikeTrain(SpikeTrain, color=colors[i], ax=ax, alpha=0.85, lw=1)
@@ -242,10 +244,12 @@ def plot_spike_detect(Segment, Config, save=None, zoom=None):
     for i, unit in enumerate(Config['general']['units']):
         bounds_kws = dict(color=colors[i], alpha=0.25, lw=0)
         if Config[unit]['adaptive_threshold'] == True:
-            adap_bound_lower, = select_by_dict(
-                Segment.analogsignals, kind='adaptive_threshold_lower', unit=unit)
-            adap_bound_upper, = select_by_dict(
-                Segment.analogsignals, kind='adaptive_threshold_upper', unit=unit)
+            adap_bound_lower, = select_by_dict(Segment.analogsignals,
+                                               kind='adaptive_threshold_lower',
+                                               unit=unit)
+            adap_bound_upper, = select_by_dict(Segment.analogsignals,
+                                               kind='adaptive_threshold_upper',
+                                               unit=unit)
 
             if zoom is not None:
                 adap_bound_lower = zoom_obj(adap_bound_lower, zoom)
@@ -294,11 +298,13 @@ def plot_Templates(templates, templates_sim, good_inds, Config, save=None):
     """
 
     fig, axes = plt.subplots(ncols=2, sharex=True, sharey=True)
-    plot_AnalogSignal(templates, color='k', alpha=0.2, lw=1, ax=axes[0], rescale=False)
+    plot_AnalogSignal(templates, color='k', alpha=0.2, lw=1, ax=axes[0],
+                      rescale=False)
     for i, line in enumerate(axes[0].lines):
         if not good_inds[i]:
             line.set_color('r')
-    plot_AnalogSignal(templates_sim, color='k', alpha=0.2, lw=1, ax=axes[1], rescale=False)
+    plot_AnalogSignal(templates_sim, color='k', alpha=0.2, lw=1, ax=axes[1],
+                      rescale=False)
 
     if save is not None:
         fig.savefig('.'.join([save, Config['general']['fig_format']]))
@@ -329,10 +335,14 @@ def plot_TM_result(Segment, Config, zoom=None, save=None):
 
         # to plot
         Vraw, = select_by_dict(Segment.analogsignals, kind='original')
-        Vrecons, = select_by_dict(Segment.analogsignals, kind='V_recons after ' + unit)
-        Vpeeled, = select_by_dict(Segment.analogsignals, kind='V_peeled after ' + unit)
-        Score_TM, = select_by_dict(Segment.analogsignals, kind='TM_Score', unit=unit)
-        SpikeTrain, = select_by_dict(Segment.spiketrains, kind='TM', unit=unit)
+        Vrecons, = select_by_dict(Segment.analogsignals,
+                                  kind='V_recons after ' + unit)
+        Vpeeled, = select_by_dict(Segment.analogsignals,
+                                  kind='V_peeled after ' + unit)
+        Score_TM, = select_by_dict(Segment.analogsignals,
+                                   kind='TM_Score', unit=unit)
+        SpikeTrain, = select_by_dict(Segment.spiketrains,
+                                     kind='TM', unit=unit)
 
         # top Vrecons
         if zoom is not None:
@@ -356,7 +366,8 @@ def plot_TM_result(Segment, Config, zoom=None, save=None):
             Asig = copy.deepcopy(Vraw)
         else:
             previous_unit = Config['general']['units'][i-1]
-            Asig, = select_by_dict(Segment.analogsignals, kind='V_peeled after ' + previous_unit)
+            Asig, = select_by_dict(Segment.analogsignals,
+                                   kind='V_peeled after ' + previous_unit)
             if zoom is not None:
                 Asig = zoom_obj(Asig, zoom)
 
@@ -365,9 +376,11 @@ def plot_TM_result(Segment, Config, zoom=None, save=None):
             SpikeTrain = zoom_obj(SpikeTrain, zoom)
 
         plot_AnalogSignal(Asig, lw=1, color='k', alpha=0.5, ax=axes[2])
-        plot_AnalogSignal(Score_TM, lw=1, color='r', alpha=0.5, ax=ax_scores, rescale=False)
+        plot_AnalogSignal(Score_TM, lw=1, color='r', alpha=0.5, ax=ax_scores,
+                          rescale=False)
         plt.axhline(config['tm_thresh'], lw=1, linestyle=':', color='maroon')
-        plot_SpikeTrain(SpikeTrain, ax=axes[2], color='red', alpha=0.7,zorder=-10)
+        plot_SpikeTrain(SpikeTrain, ax=axes[2], color='red', alpha=0.7,
+                        zorder=-10)
         axes[2].set_title('V peeled before (or raw if first unit) / score')
 
         ax_scores.set_ylim(-0.05,1.05)
