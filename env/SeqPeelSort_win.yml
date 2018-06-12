@@ -1,0 +1,20 @@
+name: SeqPeelSort
+channels:
+  - menpo
+  - defaults
+
+dependencies:
+  - python=3.5
+  - colorama=0.3.9
+  - dill=0.2.6
+  - opencv3=3.1
+  - pandas=0.20
+  - scikit-learn
+  - scipy=0.19
+  - seaborn=0.8
+  - tqdm=4.15
+  - pip:
+    - quantities==0.12.1
+    - tableprint==0.7.1
+    - elephant==0.5
+    - nixio==1.4.5
