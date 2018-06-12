@@ -58,7 +58,7 @@ rates = sp.linspace(rate_start.magnitude, rate_stop.magnitude, n_rates) * rate_s
 
 # get config
 config_path = os.path.abspath(sys.argv[1])
-# config_path = '../examples/example_config.ini'
+# config_path = '../examples/example_config.ini' # for local debuging
 
 Config = get_config(config_path)
 print_msg('config file read from ' + config_path)

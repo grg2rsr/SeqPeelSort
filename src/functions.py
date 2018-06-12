@@ -46,7 +46,6 @@ def print_msg(msg, log=True):
         log (bool): write the msg to the log as well
 
     """
-    # TODO check for compatibility with windows / mac systems
     if os.name == 'posix':
         mem_used = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6
         mem_used = sp.around(mem_used, 2)
