@@ -3,7 +3,8 @@ import sys
 import os
 import time
 import copy
-import resource
+if os.name == 'posix':
+    import resource
 import warnings
 from tqdm import tqdm
 
@@ -46,16 +47,25 @@ def print_msg(msg, log=True):
 
     """
     # TODO check for compatibility with windows / mac systems
-    mem_used = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6
-    mem_used = sp.around(mem_used, 2)
-    memstr = '('+str(mem_used) + ' GB): '
-    timestr = tp.humantime(sp.around(time.time()-t0,2))
-    print(colorama.Fore.CYAN + timestr + '\t' +  memstr + '\t' +
-          colorama.Fore.GREEN + msg)
-    if log:
-        with open('log.log', 'a+') as fH:
-            log_str = timestr + '\t' +  memstr + '\t' + msg
-            fH.writelines(log_str)
+    if os.name == 'posix':
+        mem_used = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6
+        mem_used = sp.around(mem_used, 2)
+        memstr = '('+str(mem_used) + ' GB): '
+        timestr = tp.humantime(sp.around(time.time()-t0,2))
+        print(colorama.Fore.CYAN + timestr + '\t' +  memstr + '\t' +
+              colorama.Fore.GREEN + msg)
+        if log:
+            with open('log.log', 'a+') as fH:
+                log_str = timestr + '\t' +  memstr + '\t' + msg
+                fH.writelines(log_str)
+    else:
+        timestr = tp.humantime(sp.around(time.time()-t0,2))
+        print(colorama.Fore.CYAN + timestr + '\t' +
+              colorama.Fore.GREEN + msg)
+        if log:
+            with open('log.log', 'a+') as fH:
+                log_str = timestr + '\t' + '\t' + msg
+                fH.writelines(log_str)
     pass
 
 def select_by_dict(objs, **selection):
