@@ -25,8 +25,12 @@ from plotters import *
 from functions import *
 from config import get_config
 
-tp.banner("benchmarking SeqPeelSort", 78)
-tp.banner("author: Georg Raiser - grg2rsr@gmail.com", 78)
+if os.name == 'posix':
+    tp.banner("benchmarking SeqPeelSort", 78)
+    tp.banner("author: Georg Raiser - grg2rsr@gmail.com", 78)
+else:
+    print("benchmarking SeqPeelSort")
+    print("author: Georg Raiser - grg2rsr@gmail.com")
 
 
 # ██ ███    ██ ██

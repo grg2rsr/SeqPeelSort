@@ -13,9 +13,12 @@ from plotters import *
 from config import get_config
 
 from tqdm import tqdm
-
-tp.banner("This is SeqPeelSort v1.0.0", 78)
-tp.banner("author: Georg Raiser - grg2rsr@gmail.com", 78)
+if os.name == "posix":
+    tp.banner("This is SeqPeelSort v1.0.0", 78)
+    tp.banner("author: Georg Raiser - grg2rsr@gmail.com", 78)
+else:
+    print("This is SeqPeelSort v1.0.0")
+    print("author: Georg Raiser - grg2rsr@gmail.com")
 
 
 # ██ ███    ██ ██
