@@ -9,7 +9,7 @@ tags:
 authors:
   - name: Georg Raiser
     orcid: 0000-0002-9716-3513
-    affiliation: "1, 2" # (Multiple affiliations must be quoted)
+    affiliation: "1" 
 affiliations:
  - name: dept. of Neurobiology, University of Konstanz, Germany
    index: 1
