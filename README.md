@@ -58,6 +58,8 @@ This files specifies the settings and parameters used for the spike sorting. Des
 + The output is a `.nix` file named `example_sorted.nix` that contains the sorted spike trains. Alternatively, the output can be written in the `.csv` format, which generates a separate file for each unit/segment combination containing the time stamps of the sorted spikes.
 + The subfolder `plots` contains diagnostic plots of relevant computations of the algorithm (detailed below).
 
+A more detailed usage is provided in the [USAGE.md](https://github.com/grg2rsr/SeqPeelSort/USAGE.md), along with a description of the settable parameters of the algorithm.
+
 ### Algorithm details
 _SeqPeelSort_ is a template matching based spike sorter. Generally, a distribution of templates for each unit is generated, and the waveform of the best fitting template is subtracted from the recording in an iterative manner.
 
@@ -80,33 +82,13 @@ Then, an iterative detecting and removing spikes ("_peeling_") loop starts with 
 
 the above steps above are then applied to the next smaller unit, using the "peeled" voltage for the next template matching step.
 
-## Benchmarking
-To my knowledge, no ground truth data set for SSR recordings is available. If this is wrong and you know of or have a dataset of intracellular recordings of multiple neurons within one sensillum, please contact me, such data would be of great help.
+## Community Guidelines for future development
+### expanding IO options based on users needs
+Currently, more IO options are needed, but those would be added on a user by user basis. If you are willing to write an conversion from a data format to the `.nix`, have a look at the `smr2nix.py` file as a template.
 
-In order to nevertheless estimate the sorting performance of the algorithm, a simulated dataset can be generated from extracted templates, and the sorting performance of the algorithm is assessed with this artificial ground truth dataset. This is done by generating an artificial spike train (homogeneous poisson process with a removal of spikes that would fall into the refractory period of a previous spike) and placing spike waveforms at the random time points.
+### multithreaded template matching
+In order to increase performance, the template matching step could be taken to a multithreaded computation. If you are interested in developing this, drop me a line - I have a semaphore based approach for a previous of the algorithm than can probably be adopted with not much effor.
 
-Two benchmarks are available:
-1. `benchmark_tm_params.py` can be used to determine optimal template matching parameters for the recording. Here, either threshold or percentile parameters of the algorithm are swept over the valid range in a brute force manner while the other is held fixed.
-2. `benchmark_rates.py` can be used to estimate absolute template matching performance. For each unit combination, the firing rates are swept and the generated data is subjected to the template matching and peeling steps of the algorithm.
-
-The results are placed in a subfolder `benchmark`. Examples can be found [here](https://web.gin.g-node.org/grg2rsr/SeqPeelSort_example_data/src/master/SSR_ab3_example_results)
-
-### Benchmarking example
-Run the algorithm once with properly set bounds in the config file. After the extraction of the templates, a file `results/templates.dill` is written. This file contains the templates that are used for the Benchmark. Run the `benchmark.py` script:
-```shell
-python benchmark_tm_params.py config.ini
-```
-this generates generates plots from which you can choose good values for the algorithms main parameters: the template matching percentile level, and the threshold level that the template matching score has to cross in order to set a predicted spike at this timepoint.
-
-Update the `config.ini` with those values and run
-```shell
-python benchmark_rates.py config.ini
-```
-This will simulate data with different rates for the units and runs the template matching part of SeqPeelSort on it to get an estimate of the performance, including plots comparing the template matching result to a purely thresholding based result.
-
-## Future development
-+ multithreaded template match for performance increase
-+ expanding IO options based on users needs
 
 ## References
 Hallem, E. A., Ho, M. G., & Carlson, J. R. (2004). The molecular basis of odor coding in the _Drosophila_ antenna. Cell, 117(7), 965-979.
