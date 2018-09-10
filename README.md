@@ -83,11 +83,11 @@ Then, an iterative detecting and removing spikes ("_peeling_") loop starts with 
 the above steps above are then applied to the next smaller unit, using the "peeled" voltage for the next template matching step.
 
 ## Community Guidelines for future development
-### expanding IO options based on users needs
+### Expanding IO options based on users needs
 Currently, more IO options are needed, but those would be added on a user by user basis. If you are willing to write an conversion from a data format to the `.nix`, have a look at the `smr2nix.py` file as a template.
 
-### multithreaded template matching
-In order to increase performance, the template matching step could be taken to a multithreaded computation. If you are interested in developing this, drop me a line - I have a semaphore based approach for a previous of the algorithm than can probably be adopted with not much effor.
+### Multithreaded template matching
+In order to increase performance, the template matching step could be taken to a multithreaded computation. If you are interested in developing this, drop me a line - I have a semaphore based approach for a previous of the algorithm than can probably be adopted with not much effort.
 
 
 ## References
